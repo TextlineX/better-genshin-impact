@@ -312,7 +312,7 @@ public partial class AutoSkipTrigger : ITaskTrigger
                 }
                 else
                 {
-                    InputHub.Background.Keyboard.KeyPress(User32.VK.VK_SPACE);
+                    PressDialogueConfirm();
                 }
             }
 
@@ -876,7 +876,7 @@ public partial class AutoSkipTrigger : ITaskTrigger
             using var pickRa = region.Find(pickAssets.ChatPickRo);
             if (pickRa.IsExist())
             {
-                InputHub.Background.Keyboard.KeyPress(pickAssets.PickVk);
+                PressPickAction();
                 AutoSkipLog("无气泡图标，但存在交互键，直接按下交互键");
             }
         }
@@ -886,6 +886,13 @@ public partial class AutoSkipTrigger : ITaskTrigger
 
     private bool ClickOcrRegion(Region region, string optionType = "")
     {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            PressDialogueConfirm();
+            AutoSkipLog(region.Text);
+            return true;
+        }
+
         if (string.IsNullOrEmpty(optionType))
         {
             if (!PrepareBeforeChooseOption())
@@ -1113,7 +1120,7 @@ public partial class AutoSkipTrigger : ITaskTrigger
 
                 if (!Bv.IsInBigMapUi(content.CaptureRectArea))
                 {
-                    InputHub.Background.Keyboard.KeyPress(User32.VK.VK_ESCAPE);
+                    PressMenuCancel();
 
                     AutoSkipLog("关闭弹出页");
                     ResetPageCloseRecognition();
@@ -1125,6 +1132,39 @@ public partial class AutoSkipTrigger : ITaskTrigger
     private void ResetPageCloseRecognition()
     {
         _pageCloseRecognitionStartTime = DateTime.MinValue;
+    }
+
+    private static void PressDialogueConfirm()
+    {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            InputHub.Background.SimulateAction(GIActions.MenuConfirm);
+            return;
+        }
+
+        InputHub.Background.Keyboard.KeyPress(User32.VK.VK_SPACE);
+    }
+
+    private static void PressMenuCancel()
+    {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            InputHub.Background.SimulateAction(GIActions.MenuCancel);
+            return;
+        }
+
+        InputHub.Background.Keyboard.KeyPress(User32.VK.VK_ESCAPE);
+    }
+
+    private static void PressPickAction()
+    {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            InputHub.Background.SimulateAction(GIActions.PickUpOrInteract);
+            return;
+        }
+
+        InputHub.Background.Keyboard.KeyPress(TaskContext.Instance().Config.KeyBindingsConfig.PickUpOrInteract.ToVK());
     }
     
     private DateTime _prevCloseItemTime = DateTime.MinValue;

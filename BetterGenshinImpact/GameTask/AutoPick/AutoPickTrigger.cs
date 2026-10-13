@@ -1,4 +1,5 @@
 using BetterGenshinImpact.Core.Input;
+using BetterGenshinImpact.Core.Simulator.Extensions;
 using BetterGenshinImpact.Core.Config;
 using BetterGenshinImpact.Core.Recognition;
 using BetterGenshinImpact.Core.Recognition.OCR;
@@ -248,7 +249,7 @@ public partial class AutoPickTrigger : ITaskTrigger
         if (_externalConfig is { ForceInteraction: true })
         {
             LogPick(content, "直接拾取");
-            InputHub.Foreground.Keyboard.KeyPress(_autoPickAssets.PickVk);
+            PressPickAction();
             return;
         }
 
@@ -401,7 +402,7 @@ public partial class AutoPickTrigger : ITaskTrigger
                 if (_whitelistModeFinalPickList.Contains(text))
                 {
                     LogPick(content, text);
-                    InputHub.Foreground.Keyboard.KeyPress(_autoPickAssets.PickVk);
+                    PressPickAction();
                 }
 
                 return;
@@ -410,7 +411,7 @@ public partial class AutoPickTrigger : ITaskTrigger
             if (config.BlacklistModePickEnabled && _whiteList.Contains(text))
             {
                 LogPick(content, text);
-                InputHub.Foreground.Keyboard.KeyPress(_autoPickAssets.PickVk);
+                PressPickAction();
                 return;
             }
 
@@ -438,10 +439,21 @@ public partial class AutoPickTrigger : ITaskTrigger
             speedTimer.Record("黑名单判断");
 
             LogPick(content, text);
-            InputHub.Foreground.Keyboard.KeyPress(_autoPickAssets.PickVk);
+            PressPickAction();
         }
 
         speedTimer.DebugPrint();
+    }
+
+    private static void PressPickAction()
+    {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            InputHub.Foreground.SimulateAction(GIActions.PickUpOrInteract);
+            return;
+        }
+
+        InputHub.Foreground.Keyboard.KeyPress(TaskContext.Instance().Config.KeyBindingsConfig.PickUpOrInteract.ToVK());
     }
 
     private bool DoNotPick(string text)

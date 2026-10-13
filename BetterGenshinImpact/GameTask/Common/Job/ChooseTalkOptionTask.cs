@@ -14,6 +14,8 @@ using Vanara.PInvoke;
 using static BetterGenshinImpact.GameTask.Common.TaskControl;
 using System.Text.RegularExpressions;
 using BetterGenshinImpact.Core.Config;
+using BetterGenshinImpact.Core.Simulator.Extensions;
+using BetterGenshinImpact.Core.Input.Backends.Gamepad;
 using Microsoft.Extensions.Logging;
 using BetterGenshinImpact.Core.Recognition.OpenCv;
 
@@ -62,7 +64,7 @@ public partial class ChooseTalkOptionTask
             var optionRegions = RecognizeOption(region, ct);
             if (optionRegions == null)
             {
-                InputHub.Background.Keyboard.KeyPress(User32.VK.VK_SPACE);
+                PressConfirm();
                 await Delay(500, ct);
                 continue; // retry
             }
@@ -77,8 +79,9 @@ public partial class ChooseTalkOptionTask
                 }
             }
 
-            foreach (var optionRa in optionRegions)
+            for (var optionIndex = 0; optionIndex < optionRegions.Count; optionIndex++)
             {
+                var optionRa = optionRegions[optionIndex];
                 if (optionRa.Text.Contains(option))
                 {
                     if (isOrange)
@@ -90,7 +93,14 @@ public partial class ChooseTalkOptionTask
                         }
                     }
 
-                    ClickOcrRegion(optionRa);
+                    if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+                    {
+                        new GamepadFocusNavigator(InputHub.Background).SelectOption(optionIndex, optionRegions.Count);
+                    }
+                    else
+                    {
+                        ClickOcrRegion(optionRa);
+                    }
                     await Task.Delay(300, ct);
                     return TalkOptionRes.FoundAndClick;
                 }
@@ -109,7 +119,14 @@ public partial class ChooseTalkOptionTask
             chatOptionResultList = [.. chatOptionResultList.OrderByDescending(r => r.Y)];
             if (chatOptionResultList.Count > 0)
             {
-                ClickOcrRegion(chatOptionResultList[0]);
+                if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+                {
+                    new GamepadFocusNavigator(InputHub.Background).SelectOption(chatOptionResultList.Count - 1, chatOptionResultList.Count);
+                }
+                else
+                {
+                    ClickOcrRegion(chatOptionResultList[0]);
+                }
                 await Task.Delay(200, ct);
             }
         }
@@ -134,13 +151,20 @@ public partial class ChooseTalkOptionTask
             using var chatExit = region.Find(GetChatExitRecognitionObject(region));
             if (chatExit.IsExist())
             {
-                chatExit.Click();
+                if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+                {
+                    new GamepadFocusNavigator(InputHub.Background).Cancel();
+                }
+                else
+                {
+                    chatExit.Click();
+                }
                 _logger.LogInformation("点击退出对话按钮");
                 await Delay(200, ct);
             }
             else if (Bv.IsInTalkUi(region))
             {
-                InputHub.Background.Keyboard.KeyPress(User32.VK.VK_SPACE);
+                PressConfirm();
             }
 
             await Delay(500, ct);
@@ -161,11 +185,18 @@ public partial class ChooseTalkOptionTask
                 chatOptionResultList = [.. chatOptionResultList.OrderByDescending(r => r.Y)];
                 if (chatOptionResultList.Count > 0)
                 {
-                    ClickOcrRegion(chatOptionResultList[0]);
+                    if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+                    {
+                        new GamepadFocusNavigator(InputHub.Background).SelectOption(chatOptionResultList.Count - 1, chatOptionResultList.Count);
+                    }
+                    else
+                    {
+                        ClickOcrRegion(chatOptionResultList[0]);
+                    }
                 }
                 else
                 {
-                    InputHub.Background.Keyboard.KeyPress(User32.VK.VK_SPACE);
+                    PressConfirm();
                 }
             }
             else if (Bv.IsInMainUi(region))
@@ -240,6 +271,17 @@ public partial class ChooseTalkOptionTask
     {
         region.Click();
         AutoSkipLog(region.Text);
+    }
+
+    private static void PressConfirm()
+    {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            InputHub.Background.SimulateAction(GIActions.MenuConfirm);
+            return;
+        }
+
+        InputHub.Background.Keyboard.KeyPress(User32.VK.VK_SPACE);
     }
 
     private void AutoSkipLog(string text)

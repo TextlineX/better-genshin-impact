@@ -267,4 +267,21 @@ public enum GIActions
     /// </summary>
     HideUI,
 
+    /// <summary>手柄焦点菜单向上。</summary>
+    MenuUp,
+
+    /// <summary>手柄焦点菜单向右。</summary>
+    MenuRight,
+
+    /// <summary>手柄焦点菜单向下。</summary>
+    MenuDown,
+
+    /// <summary>手柄焦点菜单向左。</summary>
+    MenuLeft,
+
+    /// <summary>手柄焦点菜单确认。</summary>
+    MenuConfirm,
+
+    /// <summary>手柄焦点菜单取消。</summary>
+    MenuCancel,
 }
