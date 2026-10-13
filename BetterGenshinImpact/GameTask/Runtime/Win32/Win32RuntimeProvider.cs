@@ -1,5 +1,7 @@
 using BetterGenshinImpact.Core.Config;
+using BetterGenshinImpact.Core.Input;
 using BetterGenshinImpact.Core.Input.Backends.Win32;
+using BetterGenshinImpact.Core.Input.Backends.Gamepad;
 using BetterGenshinImpact.Core.Mask;
 using BetterGenshinImpact.Service.Interface;
 using BetterGenshinImpact.View.Windows;
@@ -82,7 +84,12 @@ public sealed class Win32RuntimeProvider(
             var config = configService.Get();
             capture = GameCaptureFactory.Create(GetCaptureMode(config));
             capture.Start(hWnd, GameCaptureSettings.From(config));
-            var runtime = new GameRuntime(Kind, window, capture, new Win32InputBackend(hWnd),
+            IInputBackend input = config.InputBackend switch
+            {
+                InputBackendKind.Gamepad => new GamepadInputBackend(config.GamepadMappingConfig, config.KeyBindingsConfig),
+                _ => new Win32InputBackend(hWnd),
+            };
+            var runtime = new GameRuntime(Kind, window, capture, input,
                 maskWindowDrawingBoard, maskWindowMapState);
 
             // 自动查找、关联启动、手动选窗都经过这里；同一个游戏进程只通知一次
