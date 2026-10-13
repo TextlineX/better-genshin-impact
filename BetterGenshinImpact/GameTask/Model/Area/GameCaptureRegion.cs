@@ -1,5 +1,6 @@
 using BetterGenshinImpact.GameTask.Model.Area.Converter;
 using BetterGenshinImpact.Core.Mask;
+using BetterGenshinImpact.Core.Recognition;
 using OpenCvSharp;
 using System;
 using System.Drawing;
@@ -75,13 +76,39 @@ public class GameCaptureRegion(Mat mat, int initX, int initY, Region? owner = nu
     /// <param name="cy"></param>
     public static void GameRegion1080PPosClick(double cx, double cy)
     {
-        // 1080P坐标 转换到实际游戏窗口坐标
-        GameRegionClick((_, scale) => (cx * scale, cy * scale));
+        GameRegionReferencePosClick(cx, cy, SearchAnchorMode.TopLeft);
+    }
+
+    public static void GameRegion1080PPosClick(double cx, double cy, SearchAnchorMode anchor)
+    {
+        GameRegionReferencePosClick(cx, cy, anchor);
     }
 
     public static void GameRegion1080PPosMove(double cx, double cy)
     {
-        // 1080P坐标 转换到实际游戏窗口坐标
-        GameRegionMove((_, scale) => (cx * scale, cy * scale));
+        GameRegionReferencePosMove(cx, cy, SearchAnchorMode.TopLeft);
+    }
+
+    public static void GameRegion1080PPosMove(double cx, double cy, SearchAnchorMode anchor)
+    {
+        GameRegionReferencePosMove(cx, cy, anchor);
+    }
+
+    /// <summary>
+    /// 将参考画布坐标映射到当前游戏窗口。16:10 画面的额外区域由锚点决定。
+    /// 默认左上锚点保持历史 16:9 和旧任务行为不变。
+    /// </summary>
+    public static void GameRegionReferencePosClick(double x, double y, SearchAnchorMode anchor = SearchAnchorMode.TopLeft)
+    {
+        var captureAreaRect = TaskContext.Instance().SystemInfo.CaptureAreaRect;
+        var point = new ReferenceCanvasTransform(captureAreaRect.Width, captureAreaRect.Height, anchor).MapPoint(x, y);
+        DesktopRegion.DesktopRegionClick(captureAreaRect.X + point.X, captureAreaRect.Y + point.Y);
+    }
+
+    public static void GameRegionReferencePosMove(double x, double y, SearchAnchorMode anchor = SearchAnchorMode.TopLeft)
+    {
+        var captureAreaRect = TaskContext.Instance().SystemInfo.CaptureAreaRect;
+        var point = new ReferenceCanvasTransform(captureAreaRect.Width, captureAreaRect.Height, anchor).MapPoint(x, y);
+        DesktopRegion.DesktopRegionMove(captureAreaRect.X + point.X, captureAreaRect.Y + point.Y);
     }
 }

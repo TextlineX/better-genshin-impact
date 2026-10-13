@@ -1,6 +1,8 @@
 using BetterGenshinImpact.Helpers.Extensions;
+using BetterGenshinImpact.GameTask.Model.Area;
 using Microsoft.Extensions.Logging;
 using NCalc;
+using NCalc.Handlers;
 using Newtonsoft.Json;
 using OpenCvSharp;
 using System;
@@ -96,6 +98,11 @@ public static class RecognitionObjectJsonLoader
             "cutRightTop",
             "cutLeftBottom",
             "cutRightBottom",
+            "anchorTopLeft",
+            "anchorTopRight",
+            "anchorBottomLeft",
+            "anchorBottomRight",
+            "anchorCenter",
         ];
 
         private readonly RecognitionObjectJsonFile _config;
@@ -373,6 +380,11 @@ public static class RecognitionObjectJsonLoader
             ncalcExpression.Functions["cutRightTop"] = args => _captureRect.CutRightTop(ToDouble(args.Evaluate(0)), ToDouble(args.Evaluate(1)));
             ncalcExpression.Functions["cutLeftBottom"] = args => _captureRect.CutLeftBottom(ToDouble(args.Evaluate(0)), ToDouble(args.Evaluate(1)));
             ncalcExpression.Functions["cutRightBottom"] = args => _captureRect.CutRightBottom(ToDouble(args.Evaluate(0)), ToDouble(args.Evaluate(1)));
+            ncalcExpression.Functions["anchorTopLeft"] = args => MapReferenceRect(args, SearchAnchorMode.TopLeft);
+            ncalcExpression.Functions["anchorTopRight"] = args => MapReferenceRect(args, SearchAnchorMode.TopRight);
+            ncalcExpression.Functions["anchorBottomLeft"] = args => MapReferenceRect(args, SearchAnchorMode.BottomLeft);
+            ncalcExpression.Functions["anchorBottomRight"] = args => MapReferenceRect(args, SearchAnchorMode.BottomRight);
+            ncalcExpression.Functions["anchorCenter"] = args => MapReferenceRect(args, SearchAnchorMode.Center);
 
             return ncalcExpression.Evaluate();
         }
@@ -488,6 +500,12 @@ public static class RecognitionObjectJsonLoader
                 (int)Math.Round(ToDouble(y)),
                 (int)Math.Round(ToDouble(width)),
                 (int)Math.Round(ToDouble(height)));
+        }
+
+        private Rect MapReferenceRect(FunctionData args, SearchAnchorMode anchor)
+        {
+            var referenceRect = BuildRect(args.Evaluate(0), args.Evaluate(1), args.Evaluate(2), args.Evaluate(3));
+            return new ReferenceCanvasTransform(_captureRect.Width, _captureRect.Height, anchor).MapRect(referenceRect);
         }
 
         private static Scalar BuildScalar(IReadOnlyList<double> values, string fieldName)
