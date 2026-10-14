@@ -342,23 +342,14 @@ public static partial class Bv
             && RecognitionAssets.HasProfile("AutoSkip", captureRa.Width, captureRa.Height))
         {
             // 用户提供的手柄剧情截图包含稳定的左下角 UI 图标；模板匹配比 OCR 快很多。
-            // 右下角确认图标作为第二个快速路径，适用于没有左下角图标的转场帧。
+            // 不能把右下角 A/B/X/Y 按钮当作剧情标志：主界面 HUD 同样长期显示这些按钮，
+            // 否则自动剧情会把普通移动/战斗画面误判成对话并连续发送确认键。
             using var disabledUiButton = captureRa.Find(RecognitionAssets.Get(
                 "AutoSkip",
                 "DisabledUiButton",
                 captureRa.Width,
                 captureRa.Height));
             if (disabledUiButton.IsExist())
-            {
-                return true;
-            }
-
-            using var confirmIcon = captureRa.Find(RecognitionAssets.Get(
-                "AutoSkip",
-                "GamepadDialogueConfirmIcon",
-                captureRa.Width,
-                captureRa.Height));
-            if (confirmIcon.IsExist())
             {
                 return true;
             }

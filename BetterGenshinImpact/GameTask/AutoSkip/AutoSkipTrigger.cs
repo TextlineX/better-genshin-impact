@@ -1,4 +1,5 @@
 using BetterGenshinImpact.Core.Input;
+using BetterGenshinImpact.Core.Input.Backends.Gamepad;
 using BetterGenshinImpact.Core.Config;
 using BetterGenshinImpact.Core.Recognition;
 using BetterGenshinImpact.Core.Recognition.OCR;
@@ -613,6 +614,45 @@ public partial class AutoSkipTrigger : ITaskTrigger
         if (_config.IsClickNoneChatOption())
         {
             return false;
+        }
+
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            // 手柄选项依赖游戏焦点，不能把 OCR/鼠标区域当成可点击坐标。
+            // 只使用右侧选项区域里的气泡图标作为选项存在信号，然后按视觉顺序
+            // 导航到目标项并确认；不要用 RT 拾取提示作为对话选项兜底。
+            var optionRegions = region.FindMulti(GetRecognitionObject("OptionIcon", region));
+            try
+            {
+                if (optionRegions.Count == 0)
+                {
+                    return false;
+                }
+
+                if (!PrepareBeforeChooseOption())
+                {
+                    return true;
+                }
+
+                optionRegions = [.. optionRegions.OrderBy(option => option.Y)];
+                var optionIndex = _config.IsClickFirstChatOption()
+                    ? 0
+                    : _config.IsClickRandomChatOption()
+                        ? new Random().Next(0, optionRegions.Count)
+                        : optionRegions.Count - 1;
+
+                new GamepadFocusNavigator(InputHub.Background)
+                    .SelectOption(optionIndex, optionRegions.Count);
+                AutoSkipLog($"手柄焦点选择第{optionIndex + 1}项");
+                return true;
+            }
+            finally
+            {
+                foreach (var optionRegion in optionRegions)
+                {
+                    optionRegion.Dispose();
+                }
+            }
         }
         
         using var chatOptionResult = region.Find(GetRecognitionObject("OptionIcon", region));

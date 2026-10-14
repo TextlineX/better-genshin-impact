@@ -4,7 +4,7 @@
       "type": "TemplateMatch",
       "template": "RT.png",
       "roi": "rect(cw / 2 + 100 * s, 500 * s, 100 * s, 180 * s)",
-      "threshold": 0.72,
+      "threshold": 0.88,
       "useMask": true,
       "maskColor": "#00FF00",
       "draw": false

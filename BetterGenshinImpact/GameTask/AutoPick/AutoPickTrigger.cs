@@ -84,6 +84,7 @@ public partial class AutoPickTrigger : ITaskTrigger
         _externalConfig = options as AutoPickExternalConfig;
         _lastText = string.Empty;
         _prevClickFrameIndex = -1;
+        _lastGamepadActionFrameIndex = -1;
     }
 
     public void OnDisabled()
@@ -220,6 +221,11 @@ public partial class AutoPickTrigger : ITaskTrigger
     /// </summary>
     private int _prevClickFrameIndex = -1;
 
+    /// <summary>
+    /// 手柄模式下交互提示会在按键后继续保留数帧，避免同一个提示连续触发。
+    /// </summary>
+    private int _lastGamepadActionFrameIndex = -1;
+
     //private int _fastModePickCount = 0;
 
     public void OnCapture(CaptureContent content)
@@ -249,7 +255,7 @@ public partial class AutoPickTrigger : ITaskTrigger
         if (_externalConfig is { ForceInteraction: true })
         {
             LogPick(content, "直接拾取");
-            PressPickAction();
+            PressPickAction(content);
             return;
         }
 
@@ -402,7 +408,7 @@ public partial class AutoPickTrigger : ITaskTrigger
                 if (_whitelistModeFinalPickList.Contains(text))
                 {
                     LogPick(content, text);
-                    PressPickAction();
+                    PressPickAction(content);
                 }
 
                 return;
@@ -411,7 +417,7 @@ public partial class AutoPickTrigger : ITaskTrigger
             if (config.BlacklistModePickEnabled && _whiteList.Contains(text))
             {
                 LogPick(content, text);
-                PressPickAction();
+                PressPickAction(content);
                 return;
             }
 
@@ -439,16 +445,23 @@ public partial class AutoPickTrigger : ITaskTrigger
             speedTimer.Record("黑名单判断");
 
             LogPick(content, text);
-            PressPickAction();
+            PressPickAction(content);
         }
 
         speedTimer.DebugPrint();
     }
 
-    private static void PressPickAction()
+    private void PressPickAction(CaptureContent content)
     {
         if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
         {
+            if (_lastGamepadActionFrameIndex >= 0
+                && content.FrameIndex - _lastGamepadActionFrameIndex < 6)
+            {
+                return;
+            }
+
+            _lastGamepadActionFrameIndex = content.FrameIndex;
             InputHub.Foreground.SimulateAction(GIActions.PickUpOrInteract);
             return;
         }
