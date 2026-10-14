@@ -85,6 +85,7 @@ public partial class AutoPickTrigger : ITaskTrigger
         _lastText = string.Empty;
         _prevClickFrameIndex = -1;
         _lastGamepadActionFrameIndex = -1;
+        _lastGamepadActionText = string.Empty;
     }
 
     public void OnDisabled()
@@ -225,6 +226,9 @@ public partial class AutoPickTrigger : ITaskTrigger
     /// 手柄模式下交互提示会在按键后继续保留数帧，避免同一个提示连续触发。
     /// </summary>
     private int _lastGamepadActionFrameIndex = -1;
+    private string _lastGamepadActionText = string.Empty;
+
+    private const int GamepadPickupDebounceFrames = 2;
 
     //private int _fastModePickCount = 0;
 
@@ -255,7 +259,7 @@ public partial class AutoPickTrigger : ITaskTrigger
         if (_externalConfig is { ForceInteraction: true })
         {
             LogPick(content, "直接拾取");
-            PressPickAction(content);
+            PressPickAction(content, "直接拾取");
             return;
         }
 
@@ -408,7 +412,7 @@ public partial class AutoPickTrigger : ITaskTrigger
                 if (_whitelistModeFinalPickList.Contains(text))
                 {
                     LogPick(content, text);
-                    PressPickAction(content);
+                    PressPickAction(content, text);
                 }
 
                 return;
@@ -417,7 +421,7 @@ public partial class AutoPickTrigger : ITaskTrigger
             if (config.BlacklistModePickEnabled && _whiteList.Contains(text))
             {
                 LogPick(content, text);
-                PressPickAction(content);
+                PressPickAction(content, text);
                 return;
             }
 
@@ -445,23 +449,26 @@ public partial class AutoPickTrigger : ITaskTrigger
             speedTimer.Record("黑名单判断");
 
             LogPick(content, text);
-            PressPickAction(content);
+            PressPickAction(content, text);
         }
 
         speedTimer.DebugPrint();
     }
 
-    private void PressPickAction(CaptureContent content)
+    private void PressPickAction(CaptureContent content, string promptText)
     {
         if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
         {
-            if (_lastGamepadActionFrameIndex >= 0
-                && content.FrameIndex - _lastGamepadActionFrameIndex < 6)
+            var samePrompt = string.Equals(_lastGamepadActionText, promptText, StringComparison.Ordinal);
+            if (samePrompt
+                && _lastGamepadActionFrameIndex >= 0
+                && content.FrameIndex - _lastGamepadActionFrameIndex < GamepadPickupDebounceFrames)
             {
                 return;
             }
 
             _lastGamepadActionFrameIndex = content.FrameIndex;
+            _lastGamepadActionText = promptText;
             InputHub.Foreground.SimulateAction(GIActions.PickUpOrInteract);
             return;
         }

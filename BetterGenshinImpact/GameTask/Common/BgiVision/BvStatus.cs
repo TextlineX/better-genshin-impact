@@ -341,6 +341,13 @@ public static partial class Bv
         if (InputHub.Backend.Kind == InputBackendKind.Gamepad
             && RecognitionAssets.HasProfile("AutoSkip", captureRa.Width, captureRa.Height))
         {
+            // 先排除主界面和地图界面。地图右下角也有 A/B 按键，不能把它们当成剧情确认提示。
+            using var paimonMenu = captureRa.Find(ElementRecognition.Get("PaimonMenu", captureRa));
+            if (paimonMenu.IsExist() || IsInBigMapUi(captureRa))
+            {
+                return false;
+            }
+
             // 用户提供的手柄剧情截图包含稳定的左下角 UI 图标；模板匹配比 OCR 快很多。
             // 不能把右下角 A/B/X/Y 按钮当作剧情标志：主界面 HUD 同样长期显示这些按钮，
             // 否则自动剧情会把普通移动/战斗画面误判成对话并连续发送确认键。
@@ -364,26 +371,6 @@ public static partial class Bv
             if (gamepadOption.IsExist())
             {
                 return true;
-            }
-
-            // 确认提示是控制器对话界面的稳定模板。优先使用模板，
-            // 避免主界面每 120ms 都进入 Paddle OCR 兜底，造成实时触发器阻塞。
-            using var gamepadConfirmIcon = captureRa.Find(RecognitionAssets.Get(
-                "AutoSkip",
-                "GamepadDialogueConfirmIcon",
-                captureRa.Width,
-                captureRa.Height));
-            if (gamepadConfirmIcon.IsExist())
-            {
-                return true;
-            }
-
-            // 主界面存在派蒙菜单图标时不可能是对话界面，直接结束判断，
-            // 避免为了兼容自定义确认键在普通游戏画面上反复 OCR。
-            using var paimonMenu = captureRa.Find(ElementRecognition.Get("PaimonMenu", captureRa));
-            if (paimonMenu.IsExist())
-            {
-                return false;
             }
 
             // 自定义确认键可能不是 A，保留 OCR 兜底，但不要在每一帧重复调用 Paddle。
