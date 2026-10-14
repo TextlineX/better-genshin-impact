@@ -613,7 +613,17 @@ public partial class AutoSkipTrigger : ITaskTrigger
             }
 
             var fKey = AutoPickAssets.Get(region, TaskContext.Instance().Config.AutoPickConfig.PickKey).PickVk;
-            if (_config.IsClickFirstChatOption())
+            if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+            {
+                // 控制器模式没有键盘 F/W 选项提示，A 确认当前焦点，方向键负责焦点移动。
+                if (_config.IsClickRandomChatOption())
+                {
+                    InputHub.Background.SimulateAction(GIActions.MenuDown);
+                }
+
+                InputHub.Background.SimulateAction(GIActions.MenuConfirm);
+            }
+            else if (_config.IsClickFirstChatOption())
             {
                 InputHub.Background.Keyboard.KeyPress(fKey);
             }

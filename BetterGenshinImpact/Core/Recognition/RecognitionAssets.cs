@@ -66,6 +66,16 @@ public static class RecognitionAssets
         Cache.Clear();
     }
 
+    public static bool HasProfile(string taskName, int captureWidth, int captureHeight)
+    {
+        var defaultPath = Global.Absolute($@"GameTask\{taskName}\Assets\Recognition.json");
+        return ProfileResolver.CurrentProfile == RecognitionInputProfile.Gamepad
+            && !string.Equals(
+                ProfileResolver.ResolveRecognitionFile(taskName, defaultPath, captureWidth, captureHeight),
+                defaultPath,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
     private static RecognitionObject Load(RecognitionAssetCacheKey key)
     {
         var defaultRecognitionPath = Global.Absolute($@"GameTask\{key.TaskName}\Assets\Recognition.json");

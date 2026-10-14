@@ -1,4 +1,5 @@
 using BetterGenshinImpact.Core.Recognition;
+using BetterGenshinImpact.Core.Input;
 using BetterGenshinImpact.GameTask.AutoFight.Assets;
 using BetterGenshinImpact.GameTask.Common.Element.Assets;
 using BetterGenshinImpact.GameTask.Model.Area;
@@ -330,6 +331,20 @@ public static partial class Bv
     /// <returns></returns>
     public static bool IsInTalkUi(ImageRegion captureRa)
     {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad
+            && RecognitionAssets.HasProfile("AutoSkip", captureRa.Width, captureRa.Height))
+        {
+            using var gamepadConfirm = captureRa.Find(RecognitionAssets.Get(
+                "AutoSkip",
+                "GamepadDialogueConfirm",
+                captureRa.Width,
+                captureRa.Height));
+            if (gamepadConfirm.IsExist())
+            {
+                return true;
+            }
+        }
+
         using var ra = captureRa.Find(RecognitionAssets.Get("AutoSkip", "DisabledUiButton", captureRa.Width, captureRa.Height));
         return ra.IsExist();
     }
