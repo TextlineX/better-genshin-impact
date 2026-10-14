@@ -11,9 +11,17 @@
       "draw": false
     },
     "DisabledUiButton": {
-      "type": "OcrMatch",
+      "type": "TemplateMatch",
+      "template": "disabled_ui.png",
+      "roi": "rect(0, ch - 190 * s, 450 * s, 190 * s)",
+      "threshold": 0.82,
+      "draw": false
+    },
+    "GamepadDialogueConfirmIcon": {
+      "type": "TemplateMatch",
+      "template": "dialog_confirm_gamepad.png",
       "roi": "rect(cw - 420 * s, ch - 190 * s, 420 * s, 190 * s)",
-      "allContains": ["确认"],
+      "threshold": 0.82,
       "draw": false
     },
     "GamepadDialogueConfirm": {
