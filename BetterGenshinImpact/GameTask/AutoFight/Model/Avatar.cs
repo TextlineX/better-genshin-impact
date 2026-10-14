@@ -1166,6 +1166,16 @@ public class Avatar
     public void MouseDown(string key = "left")
     {
         key = key.ToLower();
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            if (TryGetGamepadMouseAction(key, out var action))
+            {
+                InputHub.Foreground.SimulateAction(action, KeyType.KeyDown);
+            }
+
+            return;
+        }
+
         if (key == "left")
         {
             InputHub.Foreground.Mouse.LeftButtonDown();
@@ -1183,6 +1193,16 @@ public class Avatar
     public void MouseUp(string key = "left")
     {
         key = key.ToLower();
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            if (TryGetGamepadMouseAction(key, out var action))
+            {
+                InputHub.Foreground.SimulateAction(action, KeyType.KeyUp);
+            }
+
+            return;
+        }
+
         if (key == "left")
         {
             InputHub.Foreground.Mouse.LeftButtonUp();
@@ -1200,6 +1220,16 @@ public class Avatar
     public void Click(string key = "left")
     {
         key = key.ToLower();
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            if (TryGetGamepadMouseAction(key, out var action))
+            {
+                InputHub.Foreground.SimulateAction(action);
+            }
+
+            return;
+        }
+
         if (key == "left")
         {
             InputHub.Foreground.Mouse.LeftButtonClick();
@@ -1212,6 +1242,19 @@ public class Avatar
         {
             InputHub.Foreground.Mouse.MiddleButtonClick();
         }
+    }
+
+    private static bool TryGetGamepadMouseAction(string key, out GIActions action)
+    {
+        action = key switch
+        {
+            "left" => GIActions.NormalAttack,
+            "right" => GIActions.SwitchAimingMode,
+            "middle" => GIActions.ElementalSight,
+            _ => default,
+        };
+
+        return key is "left" or "right" or "middle";
     }
 
     public void MoveBy(int x, int y)

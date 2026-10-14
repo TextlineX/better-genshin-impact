@@ -1,4 +1,5 @@
 using System;
+using BetterGenshinImpact.Core.Input;
 using BetterGenshinImpact.Core.Recognition;
 using BetterGenshinImpact.GameTask.Model.Assets;
 using BetterGenshinImpact.GameTask.Model.Area;
@@ -27,6 +28,15 @@ public sealed class AutoPickAssets
         CaptureHeight = captureSize.Height;
         AssetScale = captureSize.AssetScale;
         PickRo = RecognitionAssets.Get("AutoPick", "F", captureSize.Width, captureSize.Height);
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            // Controller HUD uses the RT prompt profile. Keyboard key images are
+            // deliberately not loaded in this mode because they are not present
+            // in the controller screenshot and would also use a wrong ROI.
+            ChatPickRo = PickRo;
+            return;
+        }
+
         ChatPickRo = LoadCustomChatPickKey("F", captureSize);
         if (pickKey != "F")
         {

@@ -82,6 +82,34 @@ public class RecognitionObjectJsonLoaderTests
         Assert.Equal(recognitionObject.SearchOptions.ExpandPercent, cloned.SearchOptions.ExpandPercent);
     }
 
+    [Theory]
+    [InlineData("anchorTopLeft(100, 200, 300, 400)", 100, 200, 300, 400)]
+    [InlineData("anchorCenter(100, 200, 300, 400)", 100, 260, 300, 400)]
+    [InlineData("anchorBottomRight(100, 200, 300, 400)", 100, 320, 300, 400)]
+    public void Load_AnchorRectFunctions_Map16To10Canvas(string expression, int x, int y, int width, int height)
+    {
+        var config = new RecognitionObjectJsonFile
+        {
+            Objects = new Dictionary<string, RecognitionObjectJsonConfig>
+            {
+                ["Target"] = new RecognitionObjectJsonConfig
+                {
+                    Type = nameof(RecognitionTypes.Ocr),
+                    Roi = expression,
+                },
+            },
+        };
+
+        var recognitionObject = RecognitionObjectJsonLoader.Load(config, "Target", new RecognitionObjectJsonLoadContext
+        {
+            CaptureWidth = 1920,
+            CaptureHeight = 1200,
+            TemplateLoader = (_, _) => throw new InvalidOperationException("OCR 配置不应加载模板图片"),
+        });
+
+        Assert.Equal(new Rect(x, y, width, height), recognitionObject.RegionOfInterest);
+    }
+
     private static RecognitionObjectJsonFile CreateConfig(RecognitionSearchJsonConfig search)
     {
         return new RecognitionObjectJsonFile

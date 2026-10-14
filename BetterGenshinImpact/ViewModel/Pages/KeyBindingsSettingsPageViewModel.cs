@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using BetterGenshinImpact.Core.Simulator.Extensions;
+using BetterGenshinImpact.Core.Input.Backends.Gamepad;
 using BetterGenshinImpact.GameTask;
 using Wpf.Ui.Controls;
 using BetterGenshinImpact.Genshin.Settings;
@@ -26,6 +27,8 @@ public partial class KeyBindingsSettingsPageViewModel : ViewModel
     /// 配置文件
     /// </summary>
     private readonly KeyBindingsConfig _config;
+    private readonly GamepadMappingConfig _gamepadConfig;
+    private readonly IConfigService _configService;
     private readonly GenshinStartConfig _genshinStartConfig;
 
     public sealed record GenshinRegistrySourceOption(GenshinRegistryType RegistryType, string DisplayName);
@@ -50,7 +53,10 @@ public partial class KeyBindingsSettingsPageViewModel : ViewModel
 
         // 获取本模块的配置文件
         var config = configService.Get();
+        _configService = configService;
         _config = config.KeyBindingsConfig;
+        config.GamepadMappingConfig ??= GamepadMappingConfig.CreateDefault();
+        _gamepadConfig = config.GamepadMappingConfig;
         _genshinStartConfig = config.GenshinStartConfig;
 
         BuildKeyBindingsList();
@@ -76,7 +82,42 @@ public partial class KeyBindingsSettingsPageViewModel : ViewModel
                 }
             };
         }
+
+        BindGamepadMappings(list);
     }
+
+    private void BindGamepadMappings(IEnumerable<KeyBindingSettingModel> models)
+    {
+        foreach (var model in models)
+        {
+            if (model.GamepadAction is not { } action)
+            {
+                continue;
+            }
+
+            model.SelectedGamepadBinding = GamepadBindingOption.From(
+                _gamepadConfig.Actions.GetValueOrDefault(action));
+            model.PropertyChanged += (sender, e) =>
+            {
+                if (sender is KeyBindingSettingModel changed
+                    && e.PropertyName == nameof(KeyBindingSettingModel.SelectedGamepadBinding)
+                    && changed.GamepadAction is { } changedAction)
+                {
+                    _gamepadConfig.Actions[changedAction] = Clone(changed.SelectedGamepadBinding.Control);
+                    _configService.Save();
+                }
+            };
+        }
+    }
+
+    private static GamepadControl Clone(GamepadControl source) => source.Kind switch
+    {
+        GamepadControlKind.Button => GamepadControl.ButtonControl(source.Button),
+        GamepadControlKind.Axis => GamepadControl.AxisControl(source.Axis, source.AxisValue),
+        GamepadControlKind.Trigger => GamepadControl.TriggerControl(source.Trigger, source.TriggerValue),
+        GamepadControlKind.Unmapped => GamepadControl.UnmappedControl(),
+        _ => throw new ArgumentOutOfRangeException(),
+    };
 
 
     public static List<KeyBindingSettingModel> GetAllNonDirectoryKeyBinding(IEnumerable<KeyBindingSettingModel> modelList)
@@ -249,6 +290,34 @@ public partial class KeyBindingsSettingsPageViewModel : ViewModel
                     "呼出快捷轮盘",
                     nameof(_config.ShortcutWheel),
                     _config.ShortcutWheel
+                ));
+        actionDirectory.Children.Add(new KeyBindingSettingModel(
+                    "钓鱼主要交互（手柄）",
+                    GIActions.FishingPrimaryAction
+                ));
+        actionDirectory.Children.Add(new KeyBindingSettingModel(
+                    "音游音符 1（手柄）",
+                    GIActions.MusicNote1
+                ));
+        actionDirectory.Children.Add(new KeyBindingSettingModel(
+                    "音游音符 2（手柄）",
+                    GIActions.MusicNote2
+                ));
+        actionDirectory.Children.Add(new KeyBindingSettingModel(
+                    "音游音符 3（手柄）",
+                    GIActions.MusicNote3
+                ));
+        actionDirectory.Children.Add(new KeyBindingSettingModel(
+                    "音游音符 4（手柄）",
+                    GIActions.MusicNote4
+                ));
+        actionDirectory.Children.Add(new KeyBindingSettingModel(
+                    "音游音符 5（手柄）",
+                    GIActions.MusicNote5
+                ));
+        actionDirectory.Children.Add(new KeyBindingSettingModel(
+                    "音游音符 6（手柄）",
+                    GIActions.MusicNote6
                 ));
 
         // 添加菜单按键的二级菜单
@@ -562,6 +631,7 @@ public partial class KeyBindingsSettingsPageViewModel : ViewModel
                     }
                 };
             }
+            BindGamepadMappings(list);
         }
     }
     

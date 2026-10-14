@@ -172,6 +172,8 @@ public partial class App : Application
                 services.AddTransient<WebImageInputViewModel>();
                 // services.AddView<PathingConfigView, PathingConfigViewModel>();
                 services.AddView<KeyBindingsSettingsPage, KeyBindingsSettingsPageViewModel>();
+                services.AddTransient<GamepadSettingsViewModel>();
+                services.AddTransient<GamepadSettingsWindow>();
 
                 // 一条龙 ViewModels
                 // services.AddSingleton<CraftViewModel>();

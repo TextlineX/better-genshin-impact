@@ -28,6 +28,8 @@ using BetterGenshinImpact.GameTask.AutoCook;
 using BetterGenshinImpact.GameTask.MapMask;
 using BetterGenshinImpact.GameTask.SkillCd;
 using BetterGenshinImpact.GameTask.UseRedeemCode;
+using BetterGenshinImpact.Core.Input;
+using BetterGenshinImpact.Core.Input.Backends.Gamepad;
 
 namespace BetterGenshinImpact.Core.Config;
 
@@ -37,6 +39,16 @@ namespace BetterGenshinImpact.Core.Config;
 [Serializable]
 public partial class AllConfig : ObservableObject
 {
+    /// <summary>
+    /// 本地游戏运行时使用的输入后端。默认键鼠，手柄模式需安装 ViGEmBus。
+    /// </summary>
+    public InputBackendKind InputBackend { get; set; } = InputBackendKind.Win32;
+
+    /// <summary>
+    /// Xbox/XInput 风格虚拟手柄动作映射。
+    /// </summary>
+    public GamepadMappingConfig GamepadMappingConfig { get; set; } = GamepadMappingConfig.CreateDefault();
+
     /// <summary>
     ///     窗口捕获的方式
     /// </summary>

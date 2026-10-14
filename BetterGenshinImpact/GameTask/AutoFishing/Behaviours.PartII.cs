@@ -12,6 +12,7 @@ using Compunet.YoloSharp;
 using CsTrees;
 using CsTrees.Blackboard;
 using BetterGenshinImpact.Core.Input;
+using BetterGenshinImpact.Core.Simulator.Extensions;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML.OnnxRuntime;
@@ -171,13 +172,13 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                 // 加入昼夜切换后，使用KeyPress按S键被莫名吞掉了
                 // 并且发现如果原地空格跳跃后紧跟按一下S键，角色会向侧后方走去
                 // 于是使用"按一段时间"来代替KeyPress的"按一瞬间"，以求稳定的表现
-                InputHub.Foreground.Keyboard.KeyDown(User32.VK.VK_S);
+                InputHub.Foreground.SimulateAction(GIActions.MoveBackward, KeyType.KeyDown);
                 sleep(100);
-                InputHub.Foreground.Keyboard.KeyUp(User32.VK.VK_S);
+                InputHub.Foreground.SimulateAction(GIActions.MoveBackward, KeyType.KeyUp);
                 sleep(400);
-                InputHub.Foreground.Keyboard.KeyDown(User32.VK.VK_W);
+                InputHub.Foreground.SimulateAction(GIActions.MoveForward, KeyType.KeyDown);
                 sleep(100);
-                InputHub.Foreground.Keyboard.KeyUp(User32.VK.VK_W);
+                InputHub.Foreground.SimulateAction(GIActions.MoveForward, KeyType.KeyUp);
                 sleep(700);
 
                 #endregion
@@ -348,7 +349,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
             }
             else
             {
-                _input.Keyboard.KeyPress(VK.VK_ESCAPE);
+                _input.FishingCancel();
                 sleep(2000);
             }
 

@@ -3,7 +3,7 @@
     "SereniteaPotCoin": {
       "type": "TemplateMatch",
       "template": "SereniteaPotCoin.png",
-      "roi": "rect(1610 * s, 28 * s, 160 * s, 45 * s)",
+      "roi": "anchorTopRight(1610, 28, 160, 45)",
       "use3Channels": true,
       "draw": true
     }

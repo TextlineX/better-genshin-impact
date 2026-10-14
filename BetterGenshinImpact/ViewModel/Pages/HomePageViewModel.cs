@@ -1,4 +1,5 @@
 using BetterGenshinImpact.Core.Config;
+using BetterGenshinImpact.Core.Input;
 using BetterGenshinImpact.Core.Mask;
 using BetterGenshinImpact.Core.Monitor;
 using BetterGenshinImpact.Core.Recognition.ONNX;
@@ -61,6 +62,13 @@ public partial class HomePageViewModel : ViewModel, IDisposable
 
     [ObservableProperty] private string? _selectedMode = CaptureModes.BitBlt.ToString();
 
+    /// <summary>
+    /// 首页可直接切换的运行输入模式。键鼠与手柄使用各自的输入后端和识别 profile，
+    /// 不在任务运行过程中混用。
+    /// </summary>
+    [ObservableProperty]
+    private InputBackendOption _selectedInputBackend;
+
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(IsTriggerButtonChecked))]
     private bool _taskDispatcherEnabled = false;
 
@@ -89,6 +97,15 @@ public partial class HomePageViewModel : ViewModel, IDisposable
 
     public AllConfig Config { get; set; }
 
+    public IReadOnlyList<InputBackendOption> InputBackends { get; } =
+    [
+        new(InputBackendKind.Win32, "键鼠模式"),
+        new(InputBackendKind.Gamepad, "手柄模式"),
+    ];
+
+    [ObservableProperty]
+    private string _inputModeHint = "启动时使用键鼠输入和键鼠界面识别。";
+
     public bool IsChildSessionEntryVisible => InstanceBootstrap.Current.Context.IsRoot;
 
     private readonly IMaskWindowHost _maskWindowHost;
@@ -112,6 +129,7 @@ public partial class HomePageViewModel : ViewModel, IDisposable
     private readonly ChildSessionService _childSessionService;
     private readonly WebViewInstanceStore _webViewInstanceStore;
     private readonly WebViewInstanceLauncher _webViewInstanceLauncher;
+    private readonly IConfigService _configService;
 
     public HomePageViewModel(
         IConfigService configService,
@@ -136,6 +154,12 @@ public partial class HomePageViewModel : ViewModel, IDisposable
         _childSessionService = childSessionService;
         _bannerImageService = bannerImageService;
         Config = configService.Get();
+        _configService = configService;
+        // WebView 实例使用自己的 SDK 后端，不在本地键鼠/手柄选择器中切换；
+        // 这种情况下首页仍显示键鼠选项作为占位，但不会改写 WebView 配置。
+        _selectedInputBackend = InputBackends.FirstOrDefault(option => option.Value == Config.InputBackend)
+                                ?? InputBackends[0];
+        _inputModeHint = GetInputModeHint(Config.InputBackend);
         // 本地原神的安装目录与网页版无关，网页版实例不去读注册表，也不写共享配置
         if (!InstanceBootstrap.Current.Context.IsWebView)
         {
@@ -322,6 +346,48 @@ public partial class HomePageViewModel : ViewModel, IDisposable
 
     private bool CanStartTrigger() => StartButtonEnabled;
 
+    partial void OnSelectedInputBackendChanged(InputBackendOption value)
+    {
+        if (Config.InputBackend == value.Value)
+        {
+            return;
+        }
+
+        Config.InputBackend = value.Value;
+        _configService.Save();
+        InputModeHint = GetInputModeHint(value.Value);
+
+        if (!_gameRuntimeService.IsRunning)
+        {
+            return;
+        }
+
+        // 后端在运行环境绑定时创建。切换首页模式后立即解绑并重新绑定，
+        // 让输入后端和识别 profile 同时切换，避免半键鼠、半手柄状态。
+        _ = RebindInputModeAsync(value.Value);
+    }
+
+    private async Task RebindInputModeAsync(InputBackendKind mode)
+    {
+        try
+        {
+            await _gameRuntimeService.StopAsync();
+            await _gameRuntimeService.StartAsync();
+            Toast.Success($"已切换到{(mode == InputBackendKind.Gamepad ? "手柄" : "键鼠")}模式");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "切换输入模式失败：{Mode}", mode);
+            Toast.Warning("输入模式切换失败，请重新点击启动");
+        }
+    }
+
+    private static string GetInputModeHint(InputBackendKind mode) => mode switch
+    {
+        InputBackendKind.Gamepad => "启动时使用虚拟 Xbox 手柄输入和手柄界面识别；手柄按键在“设置 → 按键设置”中配置。",
+        _ => "启动时使用键鼠输入和键鼠界面识别。",
+    };
+
     /// <summary>
     /// 启动截图器。找窗、关联启动、HDR 处理都由运行环境的 Provider 完成
     /// </summary>
@@ -365,12 +431,17 @@ public partial class HomePageViewModel : ViewModel, IDisposable
         var width = systemInfo.GameScreenSize.Width;
         var height = systemInfo.GameScreenSize.Height;
         var dpiScale = TaskContext.Instance().DpiScale;
+        _logger.LogInformation("输入模式：{Mode}", Config.InputBackend == InputBackendKind.Gamepad ? "手柄" : "键鼠");
         _logger.LogInformation("遮罩窗口已启动，游戏大小{Width}x{Height}，素材缩放{Scale}，DPI缩放{Dpi}",
             width, height, systemInfo.AssetScale.ToString("F"), dpiScale);
 
-        if (width * 9 != height * 16)
+        if (!AssertUtils.IsSupportedGameAspectRatio(width, height))
         {
-            _logger.LogError("当前游戏分辨率不是16:9，一条龙、配队识别、地图传送、地图追踪等所有独立任务与全自动任务相关功能，都将会无法正常使用！");
+            _logger.LogError("当前游戏比例不受支持：{Width}x{Height}。目前支持 16:9 与 16:10，部分独立任务与全自动任务可能无法正常使用！", width, height);
+        }
+        else if (AssertUtils.Is16By10(width, height))
+        {
+            _logger.LogInformation("检测到 16:10 游戏画面，已使用 16:10 坐标映射；未提供对应素材的任务仍可能需要单独适配。");
         }
 
         // MSIAfterburner.exe 在左上角会导致识别失败

@@ -389,7 +389,6 @@ public partial class CommonSettingsPageViewModel : ViewModel
         keyBindingsWindow.ShowDialog();
     }
 
-
     [RelayCommand]
     private async Task CheckUpdateAsync()
     {

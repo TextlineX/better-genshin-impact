@@ -49,6 +49,12 @@ public partial class AutoSkipTrigger : ITaskTrigger
     public GameUiCategory SupportedGameUiCategory => GameUiCategory.Talk;
 
     /// <summary>
+    /// 手柄对话的底部确认提示会在转场和文本切换时短暂消失，
+    /// 允许本触发器继续运行，由 OnCapture 再次确认是否处于对话界面。
+    /// </summary>
+    public bool RunWhenUiUnknown => InputHub.Backend.Kind == InputBackendKind.Gamepad;
+
+    /// <summary>
     /// 实时读取当前生效的配置（全局配置或脚本传入的配置）
     /// </summary>
     public bool IsBackgroundRunning => _config.RunBackgroundEnabled;
@@ -312,13 +318,15 @@ public partial class AutoSkipTrigger : ITaskTrigger
                 }
                 else
                 {
-                    InputHub.Background.Keyboard.KeyPress(User32.VK.VK_SPACE);
+                    PressDialogueConfirm();
                 }
             }
 
             // 对话选项选择
             bool hasOption;
-            if (UseBackgroundOperation || IsUseInteractionKey)
+            if (InputHub.Backend.Kind == InputBackendKind.Gamepad
+                || UseBackgroundOperation
+                || IsUseInteractionKey)
             {
                 hasOption = ChatOptionChooseUseKey(content.CaptureRectArea);
             }
@@ -378,6 +386,13 @@ public partial class AutoSkipTrigger : ITaskTrigger
     /// <returns></returns>
     private bool ClickBlackGameScreen(CaptureContent content)
     {
+        // 控制器模式没有可靠的鼠标点击语义。手柄对话的确认按钮由
+        // GamepadDialogueConfirm 识别，识别不到时等待下一帧，避免误按 A。
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            return false;
+        }
+
         // 黑屏剧情要点击鼠标（多次） 几乎全黑的时候不用点击
         if ((DateTime.Now - _prevClickTime).TotalMilliseconds > 1200)
         {
@@ -485,6 +500,10 @@ public partial class AutoSkipTrigger : ITaskTrigger
                     if (UseBackgroundOperation && !SystemControl.IsGenshinImpactActive())
                     {
                         skipRa.BackgroundClick();
+                    }
+                    else if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+                    {
+                        PressDialogueConfirm();
                     }
                     else
                     {
@@ -613,7 +632,17 @@ public partial class AutoSkipTrigger : ITaskTrigger
             }
 
             var fKey = AutoPickAssets.Get(region, TaskContext.Instance().Config.AutoPickConfig.PickKey).PickVk;
-            if (_config.IsClickFirstChatOption())
+            if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+            {
+                // 控制器模式没有键盘 F/W 选项提示，A 确认当前焦点，方向键负责焦点移动。
+                if (_config.IsClickRandomChatOption())
+                {
+                    InputHub.Background.SimulateAction(GIActions.MenuDown);
+                }
+
+                InputHub.Background.SimulateAction(GIActions.MenuConfirm);
+            }
+            else if (_config.IsClickFirstChatOption())
             {
                 InputHub.Background.Keyboard.KeyPress(fKey);
             }
@@ -665,7 +694,14 @@ public partial class AutoSkipTrigger : ITaskTrigger
                     return true;
                 }
 
-                exclamationIconRa.Click();
+                if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+                {
+                    PressDialogueConfirm();
+                }
+                else
+                {
+                    exclamationIconRa.Click();
+                }
                 AutoSkipLog("点击感叹号选项");
                 return true;
             }
@@ -876,7 +912,7 @@ public partial class AutoSkipTrigger : ITaskTrigger
             using var pickRa = region.Find(pickAssets.ChatPickRo);
             if (pickRa.IsExist())
             {
-                InputHub.Background.Keyboard.KeyPress(pickAssets.PickVk);
+                PressPickAction();
                 AutoSkipLog("无气泡图标，但存在交互键，直接按下交互键");
             }
         }
@@ -886,6 +922,13 @@ public partial class AutoSkipTrigger : ITaskTrigger
 
     private bool ClickOcrRegion(Region region, string optionType = "")
     {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            PressDialogueConfirm();
+            AutoSkipLog(region.Text);
+            return true;
+        }
+
         if (string.IsNullOrEmpty(optionType))
         {
             if (!PrepareBeforeChooseOption())
@@ -1113,7 +1156,7 @@ public partial class AutoSkipTrigger : ITaskTrigger
 
                 if (!Bv.IsInBigMapUi(content.CaptureRectArea))
                 {
-                    InputHub.Background.Keyboard.KeyPress(User32.VK.VK_ESCAPE);
+                    PressMenuCancel();
 
                     AutoSkipLog("关闭弹出页");
                     ResetPageCloseRecognition();
@@ -1125,6 +1168,39 @@ public partial class AutoSkipTrigger : ITaskTrigger
     private void ResetPageCloseRecognition()
     {
         _pageCloseRecognitionStartTime = DateTime.MinValue;
+    }
+
+    private static void PressDialogueConfirm()
+    {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            InputHub.Background.SimulateAction(GIActions.MenuConfirm);
+            return;
+        }
+
+        InputHub.Background.Keyboard.KeyPress(User32.VK.VK_SPACE);
+    }
+
+    private static void PressMenuCancel()
+    {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            InputHub.Background.SimulateAction(GIActions.MenuCancel);
+            return;
+        }
+
+        InputHub.Background.Keyboard.KeyPress(User32.VK.VK_ESCAPE);
+    }
+
+    private static void PressPickAction()
+    {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            InputHub.Background.SimulateAction(GIActions.PickUpOrInteract);
+            return;
+        }
+
+        InputHub.Background.Keyboard.KeyPress(TaskContext.Instance().Config.KeyBindingsConfig.PickUpOrInteract.ToVK());
     }
     
     private DateTime _prevCloseItemTime = DateTime.MinValue;
@@ -1152,7 +1228,11 @@ public partial class AutoSkipTrigger : ITaskTrigger
             }
 
             using var triangleRegion = croppedRegion.Derive(triangleRect);
-            if (UseBackgroundOperation && !SystemControl.IsGenshinImpactActive())
+            if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+            {
+                PressDialogueConfirm();
+            }
+            else if (UseBackgroundOperation && !SystemControl.IsGenshinImpactActive())
             {
                 triangleRegion.BackgroundClick();
             }
@@ -1260,7 +1340,11 @@ public partial class AutoSkipTrigger : ITaskTrigger
             var darkCount = Cv2.CountNonZero(new Mat(maskDark, bbox));
             if (lightCount <= 0 || darkCount <= 0) continue;
 
-            if (UseBackgroundOperation && !SystemControl.IsGenshinImpactActive())
+            if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+            {
+                PressDialogueConfirm();
+            }
+            else if (UseBackgroundOperation && !SystemControl.IsGenshinImpactActive())
             {
                 content.CaptureRectArea.Derive(bbox).BackgroundClick();
             }

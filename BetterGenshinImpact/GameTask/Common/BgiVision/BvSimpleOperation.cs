@@ -1,6 +1,7 @@
 using BetterGenshinImpact.Core.Input;
 using BetterGenshinImpact.Core.Recognition;
 using BetterGenshinImpact.GameTask.AutoPick.Assets;
+using BetterGenshinImpact.GameTask.AutoPick;
 using BetterGenshinImpact.GameTask.Common.Element.Assets;
 using BetterGenshinImpact.GameTask.Model.Area;
 using OpenCvSharp;
@@ -222,7 +223,7 @@ public static partial class Bv
     {
         if (FindF(captureRa, text))
         {
-            InputHub.Foreground.Keyboard.KeyPress(AutoPickAssets.Get(captureRa, TaskContext.Instance().Config.AutoPickConfig.PickKey).PickVk);
+            InputHub.Foreground.PickPress(AutoPickAssets.Get(captureRa, TaskContext.Instance().Config.AutoPickConfig.PickKey).PickVk);
             return true;
         }
 
@@ -233,7 +234,14 @@ public static partial class Bv
     {
         if (FindF(captureRa, text))
         {
-            keyboard.KeyPress(AutoPickAssets.Get(captureRa, TaskContext.Instance().Config.AutoPickConfig.PickKey).PickVk);
+            if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+            {
+                InputHub.Foreground.PickPress(AutoPickAssets.Get(captureRa, TaskContext.Instance().Config.AutoPickConfig.PickKey).PickVk);
+            }
+            else
+            {
+                keyboard.KeyPress(AutoPickAssets.Get(captureRa, TaskContext.Instance().Config.AutoPickConfig.PickKey).PickVk);
+            }
             return true;
         }
 

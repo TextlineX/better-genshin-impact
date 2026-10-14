@@ -11,7 +11,7 @@ namespace BetterGenshinImpact.GameTask.AutoPick
     }
 
     /// <summary>
-    /// 非16:9分辨率下可能无法正常工作
+    /// 非 16:9 或 16:10 分辨率下可能无法正常工作
     /// </summary>
     [Serializable]
     public partial class AutoPickConfig : ObservableObject

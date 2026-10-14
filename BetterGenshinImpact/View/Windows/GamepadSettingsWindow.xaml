@@ -1,0 +1,182 @@
+<ui:FluentWindow x:Class="BetterGenshinImpact.View.Windows.GamepadSettingsWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:vm="clr-namespace:BetterGenshinImpact.ViewModel.Windows"
+                 xmlns:i18n="clr-namespace:BetterGenshinImpact.Service.I18n"
+                 Title="手柄设置"
+                 Width="1050"
+                 Height="760"
+                 MinWidth="900"
+                 MinHeight="600"
+                 d:DataContext="{d:DesignInstance Type=vm:GamepadSettingsViewModel}"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica"
+                 WindowCornerPreference="Round"
+                 WindowStartupLocation="CenterOwner"
+                 mc:Ignorable="d">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0"
+                     Title="手柄设置"
+                     Icon="pack://application:,,,/Assets/logo.ico" />
+
+        <Grid Grid.Row="1" Margin="24,12,24,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ui:TextBlock Grid.Column="0"
+                              Margin="0,0,12,0"
+                              VerticalAlignment="Center"
+                              FontTypography="BodyStrong"
+                              Text="输入后端" />
+                <ComboBox Grid.Column="1"
+                          ItemsSource="{Binding InputBackends}"
+                          DisplayMemberPath="DisplayName"
+                          SelectedItem="{Binding SelectedInputBackend, Mode=TwoWay}" />
+                <ui:TextBlock Grid.Column="2"
+                              Margin="16,0,0,0"
+                              VerticalAlignment="Center"
+                              Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                              Text="手柄模式需要安装 ViGEmBus；切换后重启 BetterGI 或重新绑定游戏。"
+                              TextWrapping="Wrap" />
+            </Grid>
+
+            <ui:TextBlock Grid.Row="1"
+                          Margin="0,0,0,10"
+                          Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                              Text="这里配置的是动作到虚拟 Xbox 控制器控件的映射，不是键盘按键。你的原神里改过键位时，点击对应行的“录入”并按下实际手柄键；也可以直接用下拉框选择。标记为“未映射”的动作不会偷偷发送错误按钮。"
+                          TextWrapping="Wrap" />
+
+            <Border Grid.Row="2"
+                    BorderBrush="{DynamicResource CardBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="8">
+                        <Grid Margin="8,4,8,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="250" />
+                                <ColumnDefinition Width="120" />
+                                <ColumnDefinition Width="220" />
+                                <ColumnDefinition Width="170" />
+                                    <ColumnDefinition Width="150" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBlock Grid.Column="0" FontTypography="BodyStrong" Text="动作" />
+                            <ui:TextBlock Grid.Column="1" FontTypography="BodyStrong" Text="类型" />
+                            <ui:TextBlock Grid.Column="2" FontTypography="BodyStrong" Text="控件" />
+                            <ui:TextBlock Grid.Column="3" FontTypography="BodyStrong" Text="方向/力度" />
+                            <ui:TextBlock Grid.Column="4" FontTypography="BodyStrong" Text="录入 / 测试" />
+                        </Grid>
+
+                        <ItemsControl ItemsSource="{Binding Mappings}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="8,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="250" />
+                                            <ColumnDefinition Width="120" />
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition Width="170" />
+                                            <ColumnDefinition Width="150" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <ui:TextBlock Grid.Column="0"
+                                                      VerticalAlignment="Center"
+                                                      Text="{Binding ActionName}" />
+                                        <ComboBox Grid.Column="1"
+                                                  Margin="4,0"
+                                                  ItemsSource="{Binding KindOptions}"
+                                                  DisplayMemberPath="DisplayName"
+                                                  SelectedItem="{Binding SelectedKind, Mode=TwoWay}" />
+                                        <ComboBox Grid.Column="2"
+                                                  Margin="4,0"
+                                                  ItemsSource="{Binding ButtonOptions}"
+                                                  DisplayMemberPath="DisplayName"
+                                                  SelectedItem="{Binding SelectedButton, Mode=TwoWay}"
+                                                  Visibility="{Binding IsButton, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <ComboBox Grid.Column="2"
+                                                  Margin="4,0"
+                                                  ItemsSource="{Binding AxisOptions}"
+                                                  DisplayMemberPath="DisplayName"
+                                                  SelectedItem="{Binding SelectedAxis, Mode=TwoWay}"
+                                                  Visibility="{Binding IsAxis, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <ComboBox Grid.Column="2"
+                                                  Margin="4,0"
+                                                  ItemsSource="{Binding TriggerOptions}"
+                                                  DisplayMemberPath="DisplayName"
+                                                  SelectedItem="{Binding SelectedTrigger, Mode=TwoWay}"
+                                                  Visibility="{Binding IsTrigger, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <ComboBox Grid.Column="3"
+                                                  Margin="4,0"
+                                                  ItemsSource="{Binding AxisValueOptions}"
+                                                  DisplayMemberPath="DisplayName"
+                                                  SelectedItem="{Binding SelectedAxisValue, Mode=TwoWay}"
+                                                  Visibility="{Binding IsAxis, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <ComboBox Grid.Column="3"
+                                                  Margin="4,0"
+                                                  ItemsSource="{Binding TriggerValueOptions}"
+                                                  DisplayMemberPath="DisplayName"
+                                                  SelectedItem="{Binding SelectedTriggerValue, Mode=TwoWay}"
+                                                  Visibility="{Binding IsTrigger, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <StackPanel Grid.Column="4">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:Button Margin="4,0,2,0"
+                                                           Padding="8,2"
+                                                           Command="{Binding CaptureCommand}"
+                                                           Content="{Binding CaptureButtonText}"
+                                                           ToolTip="按下实体 XInput 手柄上的实际按键进行录入" />
+                                                <ui:Button Margin="2,0,4,0"
+                                                           Padding="8,2"
+                                                           Command="{Binding DataContext.TestActionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                           CommandParameter="{Binding Action}"
+                                                           Content="测试" />
+                                            </StackPanel>
+                                            <ui:TextBlock Margin="4,2,4,0"
+                                                          FontSize="11"
+                                                          Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                                          Text="{Binding CaptureStatus}"
+                                                          TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <Grid Grid.Row="3" Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ui:Button Grid.Column="0"
+                           Command="{Binding TestControllerCommand}"
+                           Content="测试 A（菜单确认）" />
+                <ui:TextBlock Grid.Column="1"
+                              Margin="12,0,0,0"
+                              VerticalAlignment="Center"
+                              Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                              Text="{Binding TestStatus}"
+                              TextWrapping="Wrap" />
+            </Grid>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

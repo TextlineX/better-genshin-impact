@@ -995,16 +995,16 @@ public class AutoBossTask : ISoloTask<Dictionary<string, int>>
     }
 
     /// <summary>
-    /// 校验当前游戏窗口是否满足自动首领讨伐所需的 16:9 分辨率。
+    /// 校验当前游戏窗口是否满足自动首领讨伐所需的 16:9 或 16:10 比例。
     /// </summary>
-    /// <exception cref="Exception">游戏窗口不是 16:9 时抛出。</exception>
+    /// <exception cref="Exception">游戏窗口比例不受支持时抛出。</exception>
     private void LogScreenResolution()
     {
         var gameScreenSize = SystemControl.GetGameScreenRect(TaskContext.Instance().GameHandle);
-        if (gameScreenSize.Width * 9 != gameScreenSize.Height * 16)
+        if (!AssertUtils.IsSupportedGameAspectRatio(gameScreenSize.Width, gameScreenSize.Height))
         {
-            _logger.LogError("游戏窗口分辨率不是 16:9 ！当前分辨率为 {Width}x{Height}", gameScreenSize.Width, gameScreenSize.Height);
-            throw new Exception("游戏窗口分辨率不是 16:9");
+            _logger.LogError("游戏窗口比例不受支持！当前分辨率为 {Width}x{Height}，目前支持 16:9 与 16:10", gameScreenSize.Width, gameScreenSize.Height);
+            throw new Exception("游戏窗口比例不受支持，目前支持 16:9 与 16:10");
         }
 
         if (gameScreenSize.Width < 1920 || gameScreenSize.Height < 1080)

@@ -1,6 +1,7 @@
 using BetterGenshinImpact.Core.Config;
 using BetterGenshinImpact.Core.Simulator.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -29,7 +30,31 @@ public abstract class InputChannelBase : IInputChannel, IKeyboardInput, IMouseIn
     private readonly HashSet<User32.VK> _pressed = [];
     private readonly ConcurrentDictionary<string, long> _lastWarnTicks = new();
 
-    protected static ILogger Logger => _logger ??= App.GetLogger<InputChannelBase>();
+    protected static ILogger Logger
+    {
+        get
+        {
+            if (_logger != null)
+            {
+                return _logger;
+            }
+
+            try
+            {
+                _logger = App.GetLogger<InputChannelBase>() is { } logger
+                    ? logger
+                    : NullLogger.Instance;
+            }
+            catch
+            {
+                // Input channels are also used by isolated unit tests before WPF
+                // application hosting is initialized.
+                _logger = NullLogger.Instance;
+            }
+
+            return _logger;
+        }
+    }
 
     public IKeyboardInput Keyboard => this;
 
@@ -108,6 +133,12 @@ public abstract class InputChannelBase : IInputChannel, IKeyboardInput, IMouseIn
         {
             return _pressed.Contains(key);
         }
+    }
+
+    public virtual bool IsActionDown(GIActions action)
+    {
+        var key = action.ToActionKey();
+        return key is not (KeyId.None or KeyId.Unknown) && IsKeyDown(key.ToVK());
     }
 
     IInputChannel IInputChannel.Sleep(int ms)

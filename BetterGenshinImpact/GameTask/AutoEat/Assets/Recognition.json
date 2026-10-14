@@ -4,14 +4,14 @@
       "type": "TemplateMatch",
       "template": "Recovery.png",
       "threshold": 0.8,
-      "roi": "rect(1810 * s, 778 * s, 23 * s, 23 * s)",
+      "roi": "anchorBottomRight(1810, 778, 23, 23)",
       "draw": false
     },
     "ResurrectionIcon": {
       "type": "TemplateMatch",
       "template": "Resurrection.png",
       "threshold": 0.8,
-      "roi": "rect(1810 * s, 778 * s, 18 * s, 19 * s)",
+      "roi": "anchorBottomRight(1810, 778, 18, 19)",
       "draw": false
     }
   }

@@ -16,7 +16,7 @@ public enum InputBackendKind
     WebSdk,
 
     /// <summary>
-    /// 手柄（预留）
+    /// ViGEm Xbox 360 虚拟手柄
     /// </summary>
     Gamepad,
 }

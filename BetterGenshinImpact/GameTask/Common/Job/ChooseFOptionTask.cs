@@ -91,14 +91,14 @@ public class ChooseFOptionTask
                         {
                             ct.ThrowIfCancellationRequested();
                             await Delay(60, ct);
-                            InputHub.Foreground.Keyboard.KeyDown(assets.PickVk);
+                            InputHub.Foreground.PickDown(assets.PickVk);
                             try
                             {
                                 await Delay(60, ct);
                             }
                             finally
                             {
-                                InputHub.Foreground.Keyboard.KeyUp(assets.PickVk);
+                                InputHub.Foreground.PickUp(assets.PickVk);
                             }
                             await Delay(60, ct);
                             _logger.LogInformation("F选项选择：已确认并按下 {Key}，选项 {Text}", assets.PickVk, current);
@@ -165,14 +165,14 @@ public class ChooseFOptionTask
 
                 ct.ThrowIfCancellationRequested();
                 await Delay(60, ct);
-                InputHub.Foreground.Keyboard.KeyDown(confirmationAssets.PickVk);
+                InputHub.Foreground.PickDown(confirmationAssets.PickVk);
                 try
                 {
                     await Delay(60, ct);
                 }
                 finally
                 {
-                    InputHub.Foreground.Keyboard.KeyUp(confirmationAssets.PickVk);
+                    InputHub.Foreground.PickUp(confirmationAssets.PickVk);
                 }
                 await Delay(60, ct);
                 _logger.LogInformation("F选项选择：复核通过，已按下 {Key}，选项 {Text}", confirmationAssets.PickVk, confirmedText);

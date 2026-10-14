@@ -1,4 +1,5 @@
 using BetterGenshinImpact.Core.Recognition;
+using BetterGenshinImpact.Core.Input;
 using BetterGenshinImpact.GameTask.AutoFight.Assets;
 using BetterGenshinImpact.GameTask.Common.Element.Assets;
 using BetterGenshinImpact.GameTask.Model.Area;
@@ -27,6 +28,13 @@ public enum GameUiCategory
 
 public static partial class Bv
 {
+    private static readonly object GamepadTalkUiOcrLock = new();
+    private static DateTime _lastGamepadTalkUiOcrAt = DateTime.MinValue;
+    private static bool _lastGamepadTalkUiOcrResult;
+    private static int _lastGamepadTalkUiWidth;
+    private static int _lastGamepadTalkUiHeight;
+    private static readonly TimeSpan GamepadTalkUiOcrInterval = TimeSpan.FromMilliseconds(120);
+
     public static GameUiCategory WhichGameUi()
     {
         using var region = TaskControl.CaptureToRectArea();
@@ -330,6 +338,64 @@ public static partial class Bv
     /// <returns></returns>
     public static bool IsInTalkUi(ImageRegion captureRa)
     {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad
+            && RecognitionAssets.HasProfile("AutoSkip", captureRa.Width, captureRa.Height))
+        {
+            // 用户提供的手柄剧情截图包含稳定的左下角 UI 图标；模板匹配比 OCR 快很多。
+            // 右下角确认图标作为第二个快速路径，适用于没有左下角图标的转场帧。
+            using var disabledUiButton = captureRa.Find(RecognitionAssets.Get(
+                "AutoSkip",
+                "DisabledUiButton",
+                captureRa.Width,
+                captureRa.Height));
+            if (disabledUiButton.IsExist())
+            {
+                return true;
+            }
+
+            using var confirmIcon = captureRa.Find(RecognitionAssets.Get(
+                "AutoSkip",
+                "GamepadDialogueConfirmIcon",
+                captureRa.Width,
+                captureRa.Height));
+            if (confirmIcon.IsExist())
+            {
+                return true;
+            }
+
+            // 自定义确认键可能不是 A，保留 OCR 兜底，但不要在每一帧重复调用 Paddle。
+            // 120ms 的节流只增加一帧级别的识别延迟，不会影响剧情确认动作。
+            lock (GamepadTalkUiOcrLock)
+            {
+                var now = DateTime.UtcNow;
+                if (captureRa.Width == _lastGamepadTalkUiWidth
+                    && captureRa.Height == _lastGamepadTalkUiHeight
+                    && now - _lastGamepadTalkUiOcrAt < GamepadTalkUiOcrInterval)
+                {
+                    return _lastGamepadTalkUiOcrResult;
+                }
+
+                _lastGamepadTalkUiOcrAt = now;
+                _lastGamepadTalkUiWidth = captureRa.Width;
+                _lastGamepadTalkUiHeight = captureRa.Height;
+            }
+
+            // 自定义手柄键位会改变确认按钮图标，但底部文字仍是“确认”。
+            // 只识别文字，避免把主界面 HUD 的 A 键误判为对话。
+            using var gamepadConfirmText = captureRa.Find(RecognitionAssets.Get(
+                "AutoSkip",
+                "GamepadDialogueConfirm",
+                captureRa.Width,
+                captureRa.Height));
+            var result = gamepadConfirmText.IsExist();
+            lock (GamepadTalkUiOcrLock)
+            {
+                _lastGamepadTalkUiOcrResult = result;
+            }
+
+            return result;
+        }
+
         using var ra = captureRa.Find(RecognitionAssets.Get("AutoSkip", "DisabledUiButton", captureRa.Width, captureRa.Height));
         return ra.IsExist();
     }

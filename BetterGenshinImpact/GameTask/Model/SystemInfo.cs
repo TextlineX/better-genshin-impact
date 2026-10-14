@@ -66,7 +66,7 @@ namespace BetterGenshinImpact.GameTask.Model
             }
 
             // 0.28 改动，素材缩放比例不可以超过 1，也就是图像识别时分辨率大于 1920x1080 的情况下直接进行缩放
-            // 取宽高相对于 1920x1080 的缩放比中的较小值，保持非 16:9 分辨率下的宽高比不失真
+            // 取宽高相对于 1920x1080 的缩放比中的较小值，保持非标准比例下的宽高比不失真
             ScaleTo1080PRatio = Math.Min(GameScreenSize.Width / 1920d, GameScreenSize.Height / 1080d); // 1080P 为标准
             if (ScaleTo1080PRatio < 1)
             {

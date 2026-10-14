@@ -267,4 +267,56 @@ public enum GIActions
     /// </summary>
     HideUI,
 
+    /// <summary>手柄焦点菜单向上。</summary>
+    MenuUp,
+
+    /// <summary>手柄焦点菜单向右。</summary>
+    MenuRight,
+
+    /// <summary>手柄焦点菜单向下。</summary>
+    MenuDown,
+
+    /// <summary>手柄焦点菜单向左。</summary>
+    MenuLeft,
+
+    /// <summary>手柄焦点菜单确认。</summary>
+    MenuConfirm,
+
+    /// <summary>手柄焦点菜单取消。</summary>
+    MenuCancel,
+
+    /// <summary>
+    /// 钓鱼等特殊玩法的主要交互动作
+    /// </summary>
+    FishingPrimaryAction,
+
+    /// <summary>
+    /// 自动音游第 1 个音符
+    /// </summary>
+    MusicNote1,
+
+    /// <summary>
+    /// 自动音游第 2 个音符
+    /// </summary>
+    MusicNote2,
+
+    /// <summary>
+    /// 自动音游第 3 个音符
+    /// </summary>
+    MusicNote3,
+
+    /// <summary>
+    /// 自动音游第 4 个音符
+    /// </summary>
+    MusicNote4,
+
+    /// <summary>
+    /// 自动音游第 5 个音符
+    /// </summary>
+    MusicNote5,
+
+    /// <summary>
+    /// 自动音游第 6 个音符
+    /// </summary>
+    MusicNote6,
 }

@@ -101,7 +101,7 @@ public class AutoAlbumTask(AutoMusicGameParam taskParam) : ISoloTask
                     if (canoraRa.IsExist())
                     {
                         Logger.LogInformation("乐曲{Num} - {Difficulty}级别：已完成【大音天籁】，切换下一首", i + 1, difficultyName);
-                        GameCaptureRegion.GameRegion1080PPosClick(310, 220);
+                        GameCaptureRegion.GameRegion1080PPosClick(310, 220, SearchAnchorMode.Center);
                         await Delay(800, ct);
                         continue;
                     }
@@ -115,7 +115,7 @@ public class AutoAlbumTask(AutoMusicGameParam taskParam) : ISoloTask
                     if (doneRa.IsExist())
                     {
                         Logger.LogInformation("当前乐曲{Num}所有奖励已领取，切换下一首", i + 1);
-                        GameCaptureRegion.GameRegion1080PPosClick(310, 220);
+                        GameCaptureRegion.GameRegion1080PPosClick(310, 220, SearchAnchorMode.Center);
                         await Delay(800, ct);
                         continue;
                     }
@@ -132,7 +132,7 @@ public class AutoAlbumTask(AutoMusicGameParam taskParam) : ISoloTask
                 await Delay(800, ct);
 
                 // 选择难度
-                GameCaptureRegion.GameRegion1080PPosClick(xPos, yPos);
+                GameCaptureRegion.GameRegion1080PPosClick(xPos, yPos, SearchAnchorMode.Center);
                 await Delay(200, ct);
 
                 // 开始演奏
@@ -187,7 +187,7 @@ public class AutoAlbumTask(AutoMusicGameParam taskParam) : ISoloTask
 
                 await Bv.WaitUntilFound(RecognitionAssets.Get("AutoMusicGame", "UiLeftTopAlbumIcon", TaskContext.Instance().SystemInfo.ScaleMax1080PCaptureRect.Width, TaskContext.Instance().SystemInfo.ScaleMax1080PCaptureRect.Height), ct);
                 Logger.LogDebug("切换到下一首乐曲");
-                GameCaptureRegion.GameRegion1080PPosClick(310, 220);
+                GameCaptureRegion.GameRegion1080PPosClick(310, 220, SearchAnchorMode.Center);
                 await Delay(800, ct);
             }
 

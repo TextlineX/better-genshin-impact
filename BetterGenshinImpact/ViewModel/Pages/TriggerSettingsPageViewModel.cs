@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using BetterGenshinImpact.Core.Config;
+using BetterGenshinImpact.Core.Input;
+using BetterGenshinImpact.Core.Input.Backends.Gamepad;
+using BetterGenshinImpact.Core.Simulator.Extensions;
 using BetterGenshinImpact.GameTask.AutoPick;
 using BetterGenshinImpact.GameTask.AutoSkip.Assets;
 using BetterGenshinImpact.GameTask.AutoSkip.Audio;
@@ -16,6 +19,7 @@ using System.Windows;
 using BetterGenshinImpact.GameTask;
 using BetterGenshinImpact.GameTask.Common;
 using BetterGenshinImpact.GameTask.SkillCd;
+using BetterGenshinImpact.Model;
 using Microsoft.Extensions.Logging;
 using Wpf.Ui;
 
@@ -35,6 +39,8 @@ public partial class TriggerSettingsPageViewModel : ViewModel
 
     [ObservableProperty] private List<string> _pickButtonNames;
 
+    [ObservableProperty] private string _selectedPickBindingName = string.Empty;
+
     [ObservableProperty] private Dictionary<string, string> _pictureInPictureSourceTypeDict =
         new()
         {
@@ -44,9 +50,12 @@ public partial class TriggerSettingsPageViewModel : ViewModel
 
     public AllConfig Config { get; set; }
 
+    public string GamepadPickButtonName => DescribeGamepadPickButton();
+
     public DialogueOptionVoiceDiagnosticState VoiceDiagnosticState { get; }
 
     private readonly INavigationService _navigationService;
+    private readonly IConfigService _configService;
 
     [ObservableProperty] private List<string> _hangoutBranches;
 
@@ -56,6 +65,8 @@ public partial class TriggerSettingsPageViewModel : ViewModel
         DialogueOptionVoiceDiagnosticState voiceDiagnosticState)
     {
         Config = configService.Get();
+        _configService = configService;
+        Config.GamepadMappingConfig ??= GamepadMappingConfig.CreateDefault();
         VoiceDiagnosticState = voiceDiagnosticState;
         _navigationService = navigationService;
         _hangoutBranches = HangoutConfig.Instance.HangoutOptionsTitleList;
@@ -69,6 +80,11 @@ public partial class TriggerSettingsPageViewModel : ViewModel
         {
             _pickButtonNames.Add(Config.AutoPickConfig.PickKey);
         }
+
+        _pickButtonNames.AddRange(GamepadBindingOption.All.Select(option => $"手柄 {option.DisplayName}"));
+        _selectedPickBindingName = Config.InputBackend == InputBackendKind.Gamepad
+            ? $"手柄 {GamepadPickButtonName}"
+            : Config.AutoPickConfig.PickKey;
     }
 
     [RelayCommand]
@@ -155,4 +171,57 @@ public partial class TriggerSettingsPageViewModel : ViewModel
     {
         _navigationService.Navigate(typeof(HotKeyPage));
     }
+
+    private string DescribeGamepadPickButton()
+    {
+        if (Config.GamepadMappingConfig?.Actions.TryGetValue(GIActions.PickUpOrInteract, out var control) != true)
+        {
+            return "未配置";
+        }
+
+        return control.Kind switch
+        {
+            GamepadControlKind.Button => control.Button.ToString(),
+            GamepadControlKind.Trigger => control.Trigger == GamepadTrigger.Left ? "LT" : "RT",
+            GamepadControlKind.Axis => $"{control.Axis} {(control.AxisValue >= 0 ? "正向" : "负向")}",
+            _ => "未配置",
+        };
+    }
+
+    partial void OnSelectedPickBindingNameChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        const string gamepadPrefix = "手柄 ";
+        if (value.StartsWith(gamepadPrefix, StringComparison.Ordinal)
+            && GamepadBindingOption.All.FirstOrDefault(option => option.DisplayName == value[gamepadPrefix.Length..]) is { } option)
+        {
+            Config.GamepadMappingConfig ??= GamepadMappingConfig.CreateDefault();
+            Config.GamepadMappingConfig.Actions[GIActions.PickUpOrInteract] = Clone(option.Control);
+            // The same dropdown selects the input path as well as the pickup
+            // control. Otherwise the game can be in controller HUD mode while
+            // BetterGI still uses Win32 and the keyboard recognition profile.
+            Config.InputBackend = InputBackendKind.Gamepad;
+            OnPropertyChanged(nameof(GamepadPickButtonName));
+        }
+        else
+        {
+            Config.AutoPickConfig.PickKey = value;
+            Config.InputBackend = InputBackendKind.Win32;
+        }
+
+        _configService.Save();
+    }
+
+    private static GamepadControl Clone(GamepadControl source) => source.Kind switch
+    {
+        GamepadControlKind.Button => GamepadControl.ButtonControl(source.Button),
+        GamepadControlKind.Axis => GamepadControl.AxisControl(source.Axis, source.AxisValue),
+        GamepadControlKind.Trigger => GamepadControl.TriggerControl(source.Trigger, source.TriggerValue),
+        GamepadControlKind.Unmapped => GamepadControl.UnmappedControl(),
+        _ => throw new ArgumentOutOfRangeException(),
+    };
 }

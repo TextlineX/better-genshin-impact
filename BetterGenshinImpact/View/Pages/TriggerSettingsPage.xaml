@@ -378,15 +378,20 @@
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="{i18n:T 默认为 F，自带了 E 和 G 按键，需要改成其他键的请阅读文档}"
+                                  Text="同一个下拉同时包含键鼠 F/E/G 和手柄按钮；选择“手柄 …”会切换到控制器后端并写入映射，重新绑定游戏后生效。当前手柄拾取/交互：{Binding GamepadPickButtonName}"
                                   TextWrapping="Wrap" />
-                    <ComboBox Grid.Row="0"
-                              Grid.RowSpan="2"
-                              Grid.Column="1"
-                              Width="80"
-                              Margin="0,0,8,0"
-                              ItemsSource="{Binding PickButtonNames}"
-                              SelectedItem="{Binding Config.AutoPickConfig.PickKey, Mode=TwoWay}" />
+                    <StackPanel Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Margin="0,0,8,0">
+                        <ComboBox Width="170"
+                                  ItemsSource="{Binding PickButtonNames}"
+                                  SelectedItem="{Binding SelectedPickBindingName, Mode=TwoWay}" />
+                        <ui:TextBlock Margin="0,6,0,0"
+                                      Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                      Text="与设置 → 按键设置中的拾取/交互行同步"
+                                      TextWrapping="Wrap" />
+                    </StackPanel>
                 </Grid>
             </StackPanel>
         </ui:CardExpander>

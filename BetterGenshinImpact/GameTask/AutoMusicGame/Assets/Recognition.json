@@ -13,7 +13,7 @@
     "AlbumMusicComplate": {
       "type": "TemplateMatch",
       "template": "album_music_complate.png",
-      "roi": "rect(900 * s, 320 * s, 100 * s, 80 * s)"
+      "roi": "anchorCenter(900, 320, 100, 80)"
     },
     "BtnList": {
       "type": "TemplateMatch",
@@ -23,22 +23,22 @@
     "MusicCanorusLevel1": {
       "type": "TemplateMatch",
       "template": "music_canorus.png",
-      "roi": "rect(450 * s, 430 * s, 200 * s, 60 * s)"
+      "roi": "anchorCenter(450, 430, 200, 60)"
     },
     "MusicCanorusLevel2": {
       "type": "TemplateMatch",
       "template": "music_canorus.png",
-      "roi": "rect(450 * s, 520 * s, 200 * s, 60 * s)"
+      "roi": "anchorCenter(450, 520, 200, 60)"
     },
     "MusicCanorusLevel3": {
       "type": "TemplateMatch",
       "template": "music_canorus.png",
-      "roi": "rect(450 * s, 610 * s, 200 * s, 60 * s)"
+      "roi": "anchorCenter(450, 610, 200, 60)"
     },
     "MusicCanorusLevel4": {
       "type": "TemplateMatch",
       "template": "music_canorus.png",
-      "roi": "rect(450 * s, 690 * s, 200 * s, 60 * s)"
+      "roi": "anchorCenter(450, 690, 200, 60)"
     }
   }
 }

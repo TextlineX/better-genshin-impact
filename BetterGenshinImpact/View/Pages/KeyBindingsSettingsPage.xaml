@@ -33,7 +33,7 @@
         <ui:TextBlock Grid.Row="1"
                       Margin="0,0,0,8"
                       Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                      Text="{i18n:T 此处的按键设置默认对除自动拾取、钓鱼、音游、伐木外的内置功能有效，在设置中打开“启用全局按键映射”开关可对JS脚本、战斗脚本和地图追踪内包含的简易策略脚本生效。请手动设置拾取按键、星之归还按键、隐藏主界面按键。}"
+                      Text="{i18n:T 每个动作同时显示键鼠绑定和手柄绑定。手柄列使用虚拟 Xbox 控制器控件，不会把键盘物理键码当作手柄按钮；原神中改过控制器键位时，请在同一行选择实际按钮。未映射的动作不会发送错误输入。}"
                       TextWrapping="Wrap" />
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
@@ -57,7 +57,7 @@
                    BorderThickness="1"
                    CornerRadius="{DynamicResource ControlCornerRadius}">
             <Grid Margin="4">
-                <ui:Grid ColumnDefinitions="*,135" Visibility="Hidden">
+                <ui:Grid ColumnDefinitions="*,120,170" Visibility="Hidden">
                     <Grid x:Name="TreeColumnStar" Grid.Column="0" />
                 </ui:Grid>
                 <ui:TreeListView BorderThickness="0" ItemsSource="{Binding KeyBindingSettingModels}">
@@ -78,7 +78,18 @@
                                                               KeyBinding="{Binding KeyValue}"
                                                               Style="{StaticResource DefaultTextBoxStyle}"
                                                               TextAlignment="Center"
-                                                              Visibility="{Binding IsDirectory, Converter={StaticResource BooleanToVisibilityRevertConverter}, Mode=OneWay}" />
+                                                              Visibility="{Binding HasKeyboardBinding, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                                    </DataTemplate>
+                                </ui:GridViewColumn.CellTemplate>
+                            </ui:GridViewColumn>
+                            <ui:GridViewColumn Width="170" Header="手柄绑定">
+                                <ui:GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox Width="150"
+                                                  ItemsSource="{Binding GamepadBindingOptions}"
+                                                  DisplayMemberPath="DisplayName"
+                                                  SelectedItem="{Binding SelectedGamepadBinding, Mode=TwoWay}"
+                                                  Visibility="{Binding HasGamepadBinding, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
                                     </DataTemplate>
                                 </ui:GridViewColumn.CellTemplate>
                             </ui:GridViewColumn>

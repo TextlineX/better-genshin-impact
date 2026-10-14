@@ -12,6 +12,9 @@ using System;
 using System.Linq;
 using System.Windows.Forms;
 using BetterGenshinImpact.GameTask.Common.BgiVision;
+using BetterGenshinImpact.Core.Input;
+using BetterGenshinImpact.Core.Input.Backends.Gamepad;
+using BetterGenshinImpact.Core.Simulator.Extensions;
 
 namespace BetterGenshinImpact.GameTask.QuickTeleport;
 
@@ -110,7 +113,15 @@ internal class QuickTeleportTrigger : ITaskTrigger
         var hasTeleportButton = false;
         imageRegion.Find(GetRecognitionObject("TeleportButton", imageRegion), ra =>
         {
-            ra.Click();
+            if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+            {
+                // 控制器地图的传送确认由当前焦点处理，不能把识别到的屏幕坐标当作鼠标点击。
+                InputHub.Background.SimulateAction(GIActions.MenuConfirm);
+            }
+            else
+            {
+                ra.Click();
+            }
             hasTeleportButton = true;
             // if ((DateTime.Now - _prevClickTeleportButtonTime).TotalSeconds > 1)
             // {
@@ -166,7 +177,15 @@ internal class QuickTeleportTrigger : ITaskTrigger
 
                 _prevClickOptionButtonTime = DateTime.Now;
                 TaskControl.Sleep(_config.TeleportListClickDelay);
-                ra.Click();
+                if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+                {
+                    // 这里的识别结果只负责确认列表已出现；控制器模式由游戏当前焦点决定选项。
+                    InputHub.Background.SimulateAction(GIActions.MenuConfirm);
+                }
+                else
+                {
+                    ra.Click();
+                }
                 hasMapChooseIcon = true;
                 break;
             }

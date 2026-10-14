@@ -1,4 +1,5 @@
 using BetterGenshinImpact.Core.Config;
+using BetterGenshinImpact.Core.Input;
 using BetterGenshinImpact.Core.Recognition.OpenCv;
 using BetterGenshinImpact.GameTask;
 using BetterGenshinImpact.GameTask.Model.Area;
@@ -12,6 +13,11 @@ namespace BetterGenshinImpact.Core.Recognition;
 public static class RecognitionAssets
 {
     private static readonly ConcurrentDictionary<RecognitionAssetCacheKey, RecognitionObject> Cache = new();
+
+    public static IRecognitionProfileResolver ProfileResolver { get; set; } =
+        new DefaultRecognitionProfileResolver(() => InputHub.Backend.Kind == InputBackendKind.Gamepad
+            ? RecognitionInputProfile.Gamepad
+            : RecognitionInputProfile.KeyboardMouse);
 
     public static RecognitionObject Get(string taskName, string objectName, Region region)
     {
@@ -27,7 +33,7 @@ public static class RecognitionAssets
 
     public static RecognitionObject Get(string taskName, string objectName, int captureWidth, int captureHeight)
     {
-        var key = new RecognitionAssetCacheKey(taskName, objectName, captureWidth, captureHeight);
+        var key = new RecognitionAssetCacheKey(taskName, objectName, captureWidth, captureHeight, ProfileResolver.CurrentProfile);
         var recognitionObject = Cache.GetOrAdd(key, static cacheKey => Load(cacheKey));
         return recognitionObject;
     }
@@ -60,10 +66,21 @@ public static class RecognitionAssets
         Cache.Clear();
     }
 
+    public static bool HasProfile(string taskName, int captureWidth, int captureHeight)
+    {
+        var defaultPath = Global.Absolute($@"GameTask\{taskName}\Assets\Recognition.json");
+        return ProfileResolver.CurrentProfile == RecognitionInputProfile.Gamepad
+            && !string.Equals(
+                ProfileResolver.ResolveRecognitionFile(taskName, defaultPath, captureWidth, captureHeight),
+                defaultPath,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
     private static RecognitionObject Load(RecognitionAssetCacheKey key)
     {
+        var defaultRecognitionPath = Global.Absolute($@"GameTask\{key.TaskName}\Assets\Recognition.json");
         return RecognitionObjectJsonLoader.LoadFromFile(
-            Global.Absolute($@"GameTask\{key.TaskName}\Assets\Recognition.json"),
+            ProfileResolver.ResolveRecognitionFile(key.TaskName, defaultRecognitionPath, key.CaptureWidth, key.CaptureHeight),
             key.ObjectName,
             new RecognitionObjectJsonLoadContext
             {
@@ -75,10 +92,14 @@ public static class RecognitionAssets
 
     private static Mat LoadTemplateImage(string taskName, string assetName, int captureWidth, int captureHeight, ImreadModes flags)
     {
-        var assetsFolder = Global.Absolute($@"GameTask\{taskName}\Assets\{captureWidth}x{captureHeight}");
+        var defaultFolder = Global.Absolute($@"GameTask\{taskName}\Assets\{captureWidth}x{captureHeight}");
+        var assetsFolder = ProfileResolver.ResolveTemplateFolder(taskName, captureWidth, captureHeight, defaultFolder);
         if (!Directory.Exists(assetsFolder))
         {
-            assetsFolder = Global.Absolute($@"GameTask\{taskName}\Assets\1920x1080");
+            var defaultProfileFolder = Global.Absolute($@"GameTask\{taskName}\Assets\Gamepad\1920x1080");
+            assetsFolder = Directory.Exists(defaultProfileFolder)
+                ? defaultProfileFolder
+                : Global.Absolute($@"GameTask\{taskName}\Assets\1920x1080");
         }
 
         if (!Directory.Exists(assetsFolder))
@@ -105,5 +126,5 @@ public static class RecognitionAssets
         return mat;
     }
 
-    private readonly record struct RecognitionAssetCacheKey(string TaskName, string ObjectName, int CaptureWidth, int CaptureHeight);
+    private readonly record struct RecognitionAssetCacheKey(string TaskName, string ObjectName, int CaptureWidth, int CaptureHeight, RecognitionInputProfile Profile);
 }
