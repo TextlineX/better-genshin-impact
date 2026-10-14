@@ -49,6 +49,12 @@ public partial class AutoSkipTrigger : ITaskTrigger
     public GameUiCategory SupportedGameUiCategory => GameUiCategory.Talk;
 
     /// <summary>
+    /// 手柄对话的底部确认提示会在转场和文本切换时短暂消失，
+    /// 允许本触发器继续运行，由 OnCapture 再次确认是否处于对话界面。
+    /// </summary>
+    public bool RunWhenUiUnknown => InputHub.Backend.Kind == InputBackendKind.Gamepad;
+
+    /// <summary>
     /// 实时读取当前生效的配置（全局配置或脚本传入的配置）
     /// </summary>
     public bool IsBackgroundRunning => _config.RunBackgroundEnabled;
@@ -318,7 +324,9 @@ public partial class AutoSkipTrigger : ITaskTrigger
 
             // 对话选项选择
             bool hasOption;
-            if (UseBackgroundOperation || IsUseInteractionKey)
+            if (InputHub.Backend.Kind == InputBackendKind.Gamepad
+                || UseBackgroundOperation
+                || IsUseInteractionKey)
             {
                 hasOption = ChatOptionChooseUseKey(content.CaptureRectArea);
             }
@@ -378,6 +386,13 @@ public partial class AutoSkipTrigger : ITaskTrigger
     /// <returns></returns>
     private bool ClickBlackGameScreen(CaptureContent content)
     {
+        // 控制器模式没有可靠的鼠标点击语义。手柄对话的确认按钮由
+        // GamepadDialogueConfirm 识别，识别不到时等待下一帧，避免误按 A。
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            return false;
+        }
+
         // 黑屏剧情要点击鼠标（多次） 几乎全黑的时候不用点击
         if ((DateTime.Now - _prevClickTime).TotalMilliseconds > 1200)
         {

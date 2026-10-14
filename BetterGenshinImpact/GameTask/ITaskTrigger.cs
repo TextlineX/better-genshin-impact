@@ -45,6 +45,12 @@ public interface ITaskTrigger
     GameUiCategory SupportedGameUiCategory => GameUiCategory.Unknown;
 
     /// <summary>
+    /// UI 短暂切换到 Unknown 时是否仍继续执行。
+    /// 仅应由能够自行确认当前界面的触发器启用，避免误操作其他界面。
+    /// </summary>
+    bool RunWhenUiUnknown => false;
+
+    /// <summary>
     /// 停用 → 启用时调用，用于重置运行状态、加载派生数据
     /// </summary>
     /// <param name="options">脚本通过 AddTrigger 传入的参数，没有则为 null</param>

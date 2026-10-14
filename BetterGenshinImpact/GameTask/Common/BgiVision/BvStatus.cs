@@ -334,15 +334,14 @@ public static partial class Bv
         if (InputHub.Backend.Kind == InputBackendKind.Gamepad
             && RecognitionAssets.HasProfile("AutoSkip", captureRa.Width, captureRa.Height))
         {
-            using var gamepadConfirm = captureRa.Find(RecognitionAssets.Get(
+            // 自定义手柄键位会改变确认按钮图标，但底部文字仍是“确认”。
+            // 只识别文字，避免把主界面 HUD 的 A 键误判为对话。
+            using var gamepadConfirmText = captureRa.Find(RecognitionAssets.Get(
                 "AutoSkip",
                 "GamepadDialogueConfirm",
                 captureRa.Width,
                 captureRa.Height));
-            if (gamepadConfirm.IsExist())
-            {
-                return true;
-            }
+            return gamepadConfirmText.IsExist();
         }
 
         using var ra = captureRa.Find(RecognitionAssets.Get("AutoSkip", "DisabledUiButton", captureRa.Width, captureRa.Height));

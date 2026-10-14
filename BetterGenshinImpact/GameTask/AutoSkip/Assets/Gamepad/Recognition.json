@@ -11,17 +11,15 @@
       "draw": false
     },
     "DisabledUiButton": {
-      "type": "TemplateMatch",
-      "template": "dialog_confirm_gamepad.png",
-      "roi": "rect(cw - 360 * s, ch - 180 * s, 360 * s, 180 * s)",
-      "threshold": 0.82,
+      "type": "OcrMatch",
+      "roi": "rect(cw - 420 * s, ch - 190 * s, 420 * s, 190 * s)",
+      "allContains": ["确认"],
       "draw": false
     },
     "GamepadDialogueConfirm": {
-      "type": "TemplateMatch",
-      "template": "dialog_confirm_gamepad.png",
-      "roi": "rect(cw - 360 * s, ch - 180 * s, 360 * s, 180 * s)",
-      "threshold": 0.82,
+      "type": "OcrMatch",
+      "roi": "rect(cw - 420 * s, ch - 190 * s, 420 * s, 190 * s)",
+      "allContains": ["确认"],
       "draw": false
     },
     "PlayingText": {
