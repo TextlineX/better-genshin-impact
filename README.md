@@ -30,7 +30,34 @@
 <br/>
 
 [English](./Docs/i18n/README.en-US.md) | [中文](./Docs/i18n/README.zh-CN.md) | [繁體中文](./Docs/i18n/README.zh-TW.md) | [日本語](./Docs/i18n/README.ja-JP.md)  
-BetterGI · 更好的原神， 一个基于计算机视觉技术，意图让原神变的更好的项目。
+BetterGI · 更好的原神，一个基于计算机视觉技术，意图让原神变得更好的项目。
+
+## 本仓库说明
+
+本仓库是由 [TextlineX](https://github.com/TextlineX) 维护的 BetterGI 独立开发仓库：
+[TextlineX/better-genshin-impact](https://github.com/TextlineX/better-genshin-impact)。
+
+### 仓库目的
+
+本仓库用于在保留 BetterGI 原有键鼠功能的基础上，独立开发和验证以下能力：
+
+* 原生支持 `16:9` 与 `16:10` 游戏画面，包括 `1920x1080`、`2560x1440`、`1920x1200` 和 `2560x1600`。
+* 支持原神控制器模式下的 UI 识别、自动拾取、自动剧情基础交互、菜单焦点导航和必要的手柄输入映射。
+* 支持 Xbox/XInput 风格的虚拟手柄输入，同时保留原有 Win32 键鼠输入方式。
+
+### 为什么需要独立开发
+
+原神切换到控制器模式后，拾取提示、地图、角色 HUD、对话选项和菜单焦点都会发生变化；用户还可能修改游戏内可配置按键。仅把键盘按键替换成手柄按键，或者把画面简单裁剪、拉伸，无法保证识别和操作链路正确。因此本仓库将分辨率坐标、控制器 UI 识别 Profile、按键映射和输入后端分别适配，并针对真实截图逐步验证。
+
+### 与上游仓库的关系
+
+本仓库基于原作者的上游项目 [babalae/better-genshin-impact](https://github.com/babalae/better-genshin-impact) 开发。上游仓库是 BetterGI 的原始项目和功能基线；本仓库是独立维护的实验与适配分支，代码、提交、Issue 和发布由本仓库单独管理。开发成果不会自动写入上游，也不会向上游推送、创建 PR 或执行合并。
+
+本仓库保留原项目的 GPL-3.0 许可证、版权声明和致谢信息。涉及上游已有功能的问题，请同时参考上游文档；涉及本仓库的 `16:10`、控制器模式或独立改动，请在本仓库提交 Issue。
+
+### 当前适配范围
+
+当前已完成控制器输入模式选择、可配置手柄动作、`16:10` 坐标映射、控制器模式下的拾取/地图/对话识别基础 Profile，以及自动拾取、自动剧情基础确认和部分任务输入调用链。自动战斗、自动寻路、钓鱼、七圣召唤和所有复杂菜单仍需按具体页面继续补充模板并进行实机验证；单元测试通过不代表已经覆盖所有游戏场景。
 
 ## 功能
 * 实时任务
@@ -73,11 +100,13 @@ BetterGI · 更好的原神， 一个基于计算机视觉技术，意图让原�
 ## 下载
 
 > [!NOTE]
-> 下载地址：[⚡Github 下载](https://github.com/babalae/better-genshin-impact/releases)
+> 上游正式版本下载：[⚡Github Releases](https://github.com/babalae/better-genshin-impact/releases)
+>
+> 本仓库用于独立开发和测试，代码与分支见：[TextlineX/better-genshin-impact](https://github.com/TextlineX/better-genshin-impact)
 > 
 > 不知道下载哪个？第一次使用？请看：[快速上手](https://www.bettergi.com/quickstart.html) ， 遇到问题请先看：[常见问题](https://www.bettergi.com/faq.html)
 
-最新测试版本可以从自动构建中获取： [![](https://github.com/babalae/better-genshin-impact/actions/workflows/publish.yml/badge.svg)](https://github.com/babalae/better-genshin-impact/actions/workflows/publish.yml)
+上游最新测试版本可以从自动构建中获取： [![](https://github.com/babalae/better-genshin-impact/actions/workflows/publish.yml/badge.svg)](https://github.com/babalae/better-genshin-impact/actions/workflows/publish.yml)
 或者从CNB上直接下载（速度快）：[CNB Releases](https://cnb.cool/bettergi/better-genshin-impact/-/releases)
 
 ## 使用方法
@@ -92,7 +121,7 @@ BetterGI · 更好的原神， 一个基于计算机视觉技术，意图让原�
 **⚠️注意：**
 1. 窗口大小变化、切换游戏分辨率、切换显示器的时候请重启本软件。
 2. 不支持任何画面滤镜（HDR、N卡滤镜等）。游戏亮度请保持默认。
-3. 当前只支持 `16:9` 的分辨率，推荐在 `1920x1080` 窗口化游戏下使用。
+3. 本仓库已适配 `16:9` 和 `16:10` 分辨率，推荐使用 `1920x1080`、`2560x1440`、`1920x1200` 或 `2560x1600`；切换分辨率后请重启本软件。
 4. **模拟操作部分可能被部分安全软件拦截，请加入白名单。已知360或者自定义规则WD会拦截部分类型的模拟点击**
 
 **打开软件以后，在“启动”页选择好截图方式，点击启动按钮就可以享受 BetterGI 带来的便利了！**
@@ -135,4 +164,4 @@ BetterGI · 更好的原神， 一个基于计算机视觉技术，意图让原�
 
 ## 问题反馈
 
-提 [Issue](https://github.com/babalae/better-genshin-impact/issues) 或 QQ群[761949201](https://qm.qq.com/q/vYdEp5htTi)
+本仓库问题请提 [Issue](https://github.com/TextlineX/better-genshin-impact/issues)；上游项目问题请提 [上游 Issue](https://github.com/babalae/better-genshin-impact/issues)；也可以加入 QQ 群 [761949201](https://qm.qq.com/q/vYdEp5htTi)。
