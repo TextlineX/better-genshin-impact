@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BetterGenshinImpact.Core.Simulator.Extensions;
 using BetterGenshinImpact.GameTask.AutoPick.Assets;
+using BetterGenshinImpact.GameTask.AutoPick;
 using Microsoft.Extensions.Logging;
 using static BetterGenshinImpact.GameTask.Common.TaskControl;
 
@@ -40,7 +41,7 @@ public class WalkToFTask
             {
                 if (needPress)
                 {
-                    InputHub.Foreground.Keyboard.KeyPress(pickAssets.PickVk);
+                    InputHub.Foreground.PickPress(pickAssets.PickVk);
                 }
 
                 Logger.LogInformation("检测到交互键");

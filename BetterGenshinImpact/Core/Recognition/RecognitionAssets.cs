@@ -70,7 +70,7 @@ public static class RecognitionAssets
     {
         var defaultRecognitionPath = Global.Absolute($@"GameTask\{key.TaskName}\Assets\Recognition.json");
         return RecognitionObjectJsonLoader.LoadFromFile(
-            ProfileResolver.ResolveRecognitionFile(key.TaskName, defaultRecognitionPath),
+            ProfileResolver.ResolveRecognitionFile(key.TaskName, defaultRecognitionPath, key.CaptureWidth, key.CaptureHeight),
             key.ObjectName,
             new RecognitionObjectJsonLoadContext
             {

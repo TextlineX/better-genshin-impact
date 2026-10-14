@@ -1,0 +1,23 @@
+{
+  "objects": {
+    "F": {
+      "type": "TemplateMatch",
+      "template": "RT.png",
+      "roi": "rect(cw / 2 + 100 * s, 500 * s, 100 * s, 180 * s)",
+      "threshold": 0.72,
+      "useMask": true,
+      "maskColor": "#00FF00",
+      "draw": false
+    },
+    "SettingsIcon": {
+      "type": "TemplateMatch",
+      "template": "icon_settings.png",
+      "draw": false
+    },
+    "L": {
+      "type": "TemplateMatch",
+      "template": "L.png",
+      "roi": "rect(cw - 110 * s, 550 * s, 70 * s, 100 * s)"
+    }
+  }
+}

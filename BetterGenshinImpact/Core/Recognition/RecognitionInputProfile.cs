@@ -16,7 +16,7 @@ public interface IRecognitionProfileResolver
 {
     RecognitionInputProfile CurrentProfile { get; }
 
-    string ResolveRecognitionFile(string taskName, string defaultPath);
+    string ResolveRecognitionFile(string taskName, string defaultPath, int captureWidth, int captureHeight);
 
     string ResolveTemplateFolder(string taskName, int captureWidth, int captureHeight, string defaultFolder);
 }
@@ -25,15 +25,17 @@ public sealed class DefaultRecognitionProfileResolver(Func<RecognitionInputProfi
 {
     public RecognitionInputProfile CurrentProfile => profileProvider();
 
-    public string ResolveRecognitionFile(string taskName, string defaultPath)
+    public string ResolveRecognitionFile(string taskName, string defaultPath, int captureWidth, int captureHeight)
     {
         if (CurrentProfile != RecognitionInputProfile.Gamepad)
         {
             return defaultPath;
         }
 
-        var profilePath = Path.Combine(Path.GetDirectoryName(defaultPath)!, "Gamepad", "Recognition.json");
-        return File.Exists(profilePath) ? profilePath : defaultPath;
+        var profileRoot = Path.Combine(Path.GetDirectoryName(defaultPath)!, "Gamepad");
+        var profilePath = Path.Combine(profileRoot, "Recognition.json");
+        var profileFolder = Path.Combine(profileRoot, $"{captureWidth}x{captureHeight}");
+        return File.Exists(profilePath) && Directory.Exists(profileFolder) ? profilePath : defaultPath;
     }
 
     public string ResolveTemplateFolder(string taskName, int captureWidth, int captureHeight, string defaultFolder)
