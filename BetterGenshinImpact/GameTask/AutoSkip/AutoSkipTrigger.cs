@@ -501,6 +501,10 @@ public partial class AutoSkipTrigger : ITaskTrigger
                     {
                         skipRa.BackgroundClick();
                     }
+                    else if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+                    {
+                        PressDialogueConfirm();
+                    }
                     else
                     {
                         skipRa.Click();
@@ -690,7 +694,14 @@ public partial class AutoSkipTrigger : ITaskTrigger
                     return true;
                 }
 
-                exclamationIconRa.Click();
+                if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+                {
+                    PressDialogueConfirm();
+                }
+                else
+                {
+                    exclamationIconRa.Click();
+                }
                 AutoSkipLog("点击感叹号选项");
                 return true;
             }
@@ -1217,7 +1228,11 @@ public partial class AutoSkipTrigger : ITaskTrigger
             }
 
             using var triangleRegion = croppedRegion.Derive(triangleRect);
-            if (UseBackgroundOperation && !SystemControl.IsGenshinImpactActive())
+            if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+            {
+                PressDialogueConfirm();
+            }
+            else if (UseBackgroundOperation && !SystemControl.IsGenshinImpactActive())
             {
                 triangleRegion.BackgroundClick();
             }
@@ -1325,7 +1340,11 @@ public partial class AutoSkipTrigger : ITaskTrigger
             var darkCount = Cv2.CountNonZero(new Mat(maskDark, bbox));
             if (lightCount <= 0 || darkCount <= 0) continue;
 
-            if (UseBackgroundOperation && !SystemControl.IsGenshinImpactActive())
+            if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+            {
+                PressDialogueConfirm();
+            }
+            else if (UseBackgroundOperation && !SystemControl.IsGenshinImpactActive())
             {
                 content.CaptureRectArea.Derive(bbox).BackgroundClick();
             }

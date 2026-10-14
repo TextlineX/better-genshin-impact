@@ -57,6 +57,8 @@ public class GamepadInputBackendTests
         Assert.Equal(GamepadButton.X, mapping.Actions[GIActions.PickUpOrInteract].Button);
         Assert.Equal(GamepadButton.A, mapping.Actions[GIActions.MenuConfirm].Button);
         Assert.Equal(GamepadButton.B, mapping.Actions[GIActions.MenuCancel].Button);
+        Assert.Equal(GamepadButton.RightThumb, mapping.Actions[GIActions.QuestNavigation].Button);
+        Assert.Equal(GamepadControlKind.Unmapped, mapping.Actions[GIActions.SwitchMember5].Kind);
         Assert.Equal(GamepadTrigger.Right, mapping.Actions[GIActions.NormalAttack].Trigger);
         Assert.Equal(GamepadAxis.LeftThumbY, mapping.Actions[GIActions.MoveForward].Axis);
     }
@@ -101,6 +103,21 @@ public class GamepadInputBackendTests
 
         Assert.Equal(0, device.Axes[GamepadAxis.RightThumbX]);
         Assert.Equal(0, device.Axes[GamepadAxis.RightThumbY]);
+    }
+
+    [Fact]
+    public void MouseClick_UsesControllerConfirmAndCancelSemantics()
+    {
+        var device = new RecordingGamepadDevice();
+        using var backend = new GamepadInputBackend(device);
+
+        backend.Foreground.Mouse.LeftButtonClick();
+        Assert.Equal(1, device.ButtonPresses[GamepadButton.A]);
+        Assert.False(device.Buttons[GamepadButton.A]);
+
+        backend.Foreground.Mouse.RightButtonClick();
+        Assert.Equal(1, device.ButtonPresses[GamepadButton.B]);
+        Assert.False(device.Buttons[GamepadButton.B]);
     }
 
     private sealed class RecordingGamepadDevice : IGamepadDevice

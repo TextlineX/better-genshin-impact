@@ -124,13 +124,15 @@ public sealed class GamepadMappingConfig
                 [GIActions.PickUpOrInteract] = GamepadControl.ButtonControl(GamepadButton.X),
                 [GIActions.QuickUseGadget] = GamepadControl.ButtonControl(GamepadButton.DPadDown),
                 [GIActions.InteractionInSomeMode] = GamepadControl.ButtonControl(GamepadButton.X),
-                [GIActions.QuestNavigation] = GamepadControl.ButtonControl(GamepadButton.DPadUp),
+                // 控制器地图右下角明确显示“RS 追踪目标”，对应键鼠模式的任务追踪动作。
+                [GIActions.QuestNavigation] = GamepadControl.ButtonControl(GamepadButton.RightThumb),
                 [GIActions.AbandonChallenge] = GamepadControl.ButtonControl(GamepadButton.B),
                 [GIActions.SwitchMember1] = GamepadControl.ButtonControl(GamepadButton.DPadUp),
                 [GIActions.SwitchMember2] = GamepadControl.ButtonControl(GamepadButton.DPadRight),
                 [GIActions.SwitchMember3] = GamepadControl.ButtonControl(GamepadButton.DPadDown),
                 [GIActions.SwitchMember4] = GamepadControl.ButtonControl(GamepadButton.DPadLeft),
-                [GIActions.SwitchMember5] = GamepadControl.ButtonControl(GamepadButton.RightThumb),
+                // 原神控制器 HUD 只提供四个队伍槽位；右摇杆按下用于地图“追踪目标”。
+                [GIActions.SwitchMember5] = GamepadControl.UnmappedControl(),
                 [GIActions.ShortcutWheel] = GamepadControl.ButtonControl(GamepadButton.LeftBumper),
                 [GIActions.OpenInventory] = GamepadControl.ButtonControl(GamepadButton.Back),
                 [GIActions.OpenCharacterScreen] = GamepadControl.ButtonControl(GamepadButton.DPadLeft),

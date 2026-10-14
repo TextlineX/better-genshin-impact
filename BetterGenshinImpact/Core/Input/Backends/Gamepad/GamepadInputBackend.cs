@@ -138,8 +138,26 @@ internal sealed class GamepadChannel : InputChannelBase
         }
     }
 
-    protected override void OnMouseButton(InputMouseButton button, bool down) =>
-        WarnUnsupported($"鼠标按钮 {button} 在手柄模式下没有坐标点击语义");
+    protected override void OnMouseButton(InputMouseButton button, bool down)
+    {
+        // 旧任务大量使用 Region.Click()。在控制器界面中它表达的是“确认当前焦点”，
+        // 而不是向游戏发送鼠标坐标。把这两个通用语义转换到虚拟手柄，避免每个任务
+        // 都复制一套键鼠/手柄分支；真正需要鼠标坐标的路径仍会由 OnMoveTo 明确告警。
+        var action = button switch
+        {
+            InputMouseButton.Left => GIActions.MenuConfirm,
+            InputMouseButton.Right => GIActions.MenuCancel,
+            _ => (GIActions?)null,
+        };
+
+        if (action is { } mappedAction)
+        {
+            SetAction(mappedAction, down);
+            return;
+        }
+
+        WarnUnsupported($"鼠标按钮 {button} 在手柄模式下没有对应的控制器语义");
+    }
 
     protected override void OnMoveBy(int dx, int dy)
     {
