@@ -61,7 +61,7 @@
             <ui:TextBlock Grid.Row="1"
                           Margin="0,0,0,10"
                           Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                          Text="这里配置的是虚拟 Xbox 控制器按钮，不是键盘按键。拾取、菜单确认、菜单取消和剧情选项会使用对应的手柄动作。"
+                          Text="这里配置的是动作到虚拟 Xbox 控制器控件的映射，不是键盘按键。你的原神里改过键位时，点击对应行的“录入”并按下实际手柄键；也可以直接用下拉框选择。"
                           TextWrapping="Wrap" />
 
             <Border Grid.Row="2"
@@ -76,12 +76,13 @@
                                 <ColumnDefinition Width="120" />
                                 <ColumnDefinition Width="220" />
                                 <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="150" />
                             </Grid.ColumnDefinitions>
                             <ui:TextBlock Grid.Column="0" FontTypography="BodyStrong" Text="动作" />
                             <ui:TextBlock Grid.Column="1" FontTypography="BodyStrong" Text="类型" />
                             <ui:TextBlock Grid.Column="2" FontTypography="BodyStrong" Text="控件" />
                             <ui:TextBlock Grid.Column="3" FontTypography="BodyStrong" Text="方向/力度" />
+                            <ui:TextBlock Grid.Column="4" FontTypography="BodyStrong" Text="录入 / 测试" />
                         </Grid>
 
                         <ItemsControl ItemsSource="{Binding Mappings}">
@@ -93,7 +94,7 @@
                                             <ColumnDefinition Width="120" />
                                             <ColumnDefinition Width="220" />
                                             <ColumnDefinition Width="170" />
-                                            <ColumnDefinition Width="120" />
+                                            <ColumnDefinition Width="150" />
                                         </Grid.ColumnDefinitions>
 
                                         <ui:TextBlock Grid.Column="0"
@@ -134,6 +135,25 @@
                                                   DisplayMemberPath="DisplayName"
                                                   SelectedItem="{Binding SelectedTriggerValue, Mode=TwoWay}"
                                                   Visibility="{Binding IsTrigger, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <StackPanel Grid.Column="4">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:Button Margin="4,0,2,0"
+                                                           Padding="8,2"
+                                                           Command="{Binding CaptureCommand}"
+                                                           Content="{Binding CaptureButtonText}"
+                                                           ToolTip="按下实体 XInput 手柄上的实际按键进行录入" />
+                                                <ui:Button Margin="2,0,4,0"
+                                                           Padding="8,2"
+                                                           Command="{Binding DataContext.TestActionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                           CommandParameter="{Binding Action}"
+                                                           Content="测试" />
+                                            </StackPanel>
+                                            <ui:TextBlock Margin="4,2,4,0"
+                                                          FontSize="11"
+                                                          Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                                          Text="{Binding CaptureStatus}"
+                                                          TextWrapping="Wrap" />
+                                        </StackPanel>
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

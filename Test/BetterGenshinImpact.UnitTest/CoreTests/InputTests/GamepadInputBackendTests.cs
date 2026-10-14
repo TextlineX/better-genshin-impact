@@ -61,6 +61,24 @@ public class GamepadInputBackendTests
         Assert.Equal(GamepadAxis.LeftThumbY, mapping.Actions[GIActions.MoveForward].Axis);
     }
 
+    [Fact]
+    public void CustomMapping_IsUsedForActionsWithoutTreatingItAsKeyboardInput()
+    {
+        var mapping = GamepadMappingConfig.CreateDefault();
+        mapping.Actions[GIActions.NormalAttack] = GamepadControl.ButtonControl(GamepadButton.X);
+        mapping.Actions[GIActions.PickUpOrInteract] = GamepadControl.TriggerControl(GamepadTrigger.Right);
+
+        var device = new RecordingGamepadDevice();
+        using var backend = new GamepadInputBackend(device, mapping);
+
+        backend.Foreground.SimulateAction(GIActions.NormalAttack);
+        Assert.Equal(1, device.ButtonPresses[GamepadButton.X]);
+        Assert.DoesNotContain(GamepadButton.A, device.ButtonPresses.Keys);
+
+        backend.Foreground.SimulateAction(GIActions.PickUpOrInteract, KeyType.KeyDown);
+        Assert.Equal(byte.MaxValue, device.Triggers[GamepadTrigger.Right]);
+    }
+
     private sealed class RecordingGamepadDevice : IGamepadDevice
     {
         public Dictionary<GamepadButton, bool> Buttons { get; } = new();

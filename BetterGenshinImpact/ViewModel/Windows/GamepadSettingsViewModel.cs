@@ -126,6 +126,14 @@ public sealed partial class GamepadMappingSettingItem : ObservableObject
     [ObservableProperty]
     private bool _isTrigger;
 
+    [ObservableProperty]
+    private bool _isCapturing;
+
+    [ObservableProperty]
+    private string _captureStatus = "";
+
+    public string CaptureButtonText => IsCapturing ? "等待按键…" : "录入";
+
     partial void OnSelectedKindChanged(GamepadOption<GamepadControlKind> value)
     {
         UpdateKindVisibility();
@@ -142,6 +150,8 @@ public sealed partial class GamepadMappingSettingItem : ObservableObject
 
     partial void OnSelectedTriggerValueChanged(GamepadOption<byte> value) => SaveControl();
 
+    partial void OnIsCapturingChanged(bool value) => OnPropertyChanged(nameof(CaptureButtonText));
+
     private void UpdateKindVisibility()
     {
         IsButton = SelectedKind.Value == GamepadControlKind.Button;
@@ -151,7 +161,7 @@ public sealed partial class GamepadMappingSettingItem : ObservableObject
 
     private void SaveControl()
     {
-        if (SelectedKind == null)
+        if (_isApplyingControl || SelectedKind == null)
         {
             return;
         }
@@ -166,6 +176,72 @@ public sealed partial class GamepadMappingSettingItem : ObservableObject
 
         _configService.Save();
     }
+
+    [RelayCommand]
+    private async Task CaptureAsync()
+    {
+        if (IsCapturing)
+        {
+            return;
+        }
+
+        IsCapturing = true;
+        CaptureStatus = "请先松开手柄，再按下要绑定的实体按键（10 秒内）";
+        try
+        {
+            var control = await XInputGamepadReader.CaptureAsync(TimeSpan.FromSeconds(10));
+            if (control == null)
+            {
+                CaptureStatus = "没有检测到 XInput 手柄输入，请确认手柄已连接并使用 XInput 模式";
+                return;
+            }
+
+            ApplyControl(control);
+            CaptureStatus = $"已录入：{Describe(control)}";
+        }
+        catch (OperationCanceledException)
+        {
+            CaptureStatus = "已取消录入";
+        }
+        catch (Exception ex)
+        {
+            CaptureStatus = $"录入失败：{ex.Message}";
+        }
+        finally
+        {
+            IsCapturing = false;
+        }
+    }
+
+    private void ApplyControl(GamepadControl control)
+    {
+        _isApplyingControl = true;
+        try
+        {
+            SelectedKind = KindOptions.First(option => option.Value == control.Kind);
+            SelectedButton = ButtonOptions.First(option => option.Value == control.Button);
+            SelectedAxis = AxisOptions.First(option => option.Value == control.Axis);
+            SelectedTrigger = TriggerOptions.First(option => option.Value == control.Trigger);
+            SelectedAxisValue = AxisValueOptions.First(option => option.Value == control.AxisValue);
+            SelectedTriggerValue = TriggerValueOptions.First(option => option.Value == control.TriggerValue);
+        }
+        finally
+        {
+            _isApplyingControl = false;
+        }
+
+        SaveControl();
+    }
+
+    private bool _isApplyingControl;
+
+    private static string Describe(GamepadControl control) => control.Kind switch
+    {
+        GamepadControlKind.Button => control.Button.ToString(),
+        GamepadControlKind.Axis => $"{control.Axis} {(control.AxisValue >= 0 ? "正向" : "负向")}",
+        GamepadControlKind.Trigger => control.Trigger == GamepadTrigger.Left ? "LT" : "RT",
+        _ => control.Kind.ToString(),
+    };
 }
 
 public sealed partial class GamepadSettingsViewModel : ObservableObject
@@ -258,7 +334,7 @@ public sealed partial class GamepadSettingsViewModel : ObservableObject
     private InputBackendOption _selectedInputBackend;
 
     [ObservableProperty]
-    private string _testStatus = "测试会向当前虚拟手柄发送一次 A（菜单确认）长按。";
+    private string _testStatus = "可逐行动作测试；“录入”会读取实体 XInput 手柄，不会读取或修改原神配置。";
 
     partial void OnSelectedInputBackendChanged(InputBackendOption value)
     {
@@ -293,6 +369,33 @@ public sealed partial class GamepadSettingsViewModel : ObservableObject
         {
             TestStatus = $"手柄测试失败：{ex.Message}";
         }
+    }
+
+    [RelayCommand]
+    private async Task TestActionAsync(GIActions action)
+    {
+        TestStatus = $"正在测试：{ActionNames.GetValueOrDefault(action, action.ToString())}……";
+        try
+        {
+            await Task.Run(() => SendTestAction(action));
+            TestStatus = $"{ActionNames.GetValueOrDefault(action, action.ToString())} 测试完成，请观察游戏或 Windows 手柄测试。";
+        }
+        catch (Exception ex)
+        {
+            TestStatus = $"测试失败：{ex.Message}";
+        }
+    }
+
+    private void SendTestAction(GIActions action)
+    {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            InputHub.Backend.Foreground.SimulateAction(action, KeyType.Hold);
+            return;
+        }
+
+        using var backend = new GamepadInputBackend(Config.GamepadMappingConfig, Config.KeyBindingsConfig);
+        backend.Foreground.SimulateAction(action, KeyType.Hold);
     }
 
     private static GamepadControl Clone(GamepadControl source) => source.Kind switch
