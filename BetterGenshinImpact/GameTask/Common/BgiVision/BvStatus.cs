@@ -354,6 +354,18 @@ public static partial class Bv
                 return true;
             }
 
+            // 选项页的控制器气泡是独立于左下角剧情工具栏的稳定标志。
+            // 选项页可能没有右下角“确认”文字，因此必须在 OCR 之前判断它。
+            using var gamepadOption = captureRa.Find(RecognitionAssets.Get(
+                "AutoSkip",
+                "OptionIcon",
+                captureRa.Width,
+                captureRa.Height));
+            if (gamepadOption.IsExist())
+            {
+                return true;
+            }
+
             // 自定义确认键可能不是 A，保留 OCR 兜底，但不要在每一帧重复调用 Paddle。
             // 120ms 的节流只增加一帧级别的识别延迟，不会影响剧情确认动作。
             lock (GamepadTalkUiOcrLock)

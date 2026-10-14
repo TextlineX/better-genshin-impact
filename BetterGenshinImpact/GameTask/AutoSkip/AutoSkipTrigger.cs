@@ -306,34 +306,52 @@ public partial class AutoSkipTrigger : ITaskTrigger
         if (isPlaying)
         {
             _prevPlayingTime = DateTime.Now;
-            if (_config.QuicklySkipConversationsEnabled)
-            {
-                if (_config.BeforeClickConfirmDelay > 0)
-                {
-                    // 在触发点击动作之前延迟时间
-                    Thread.Sleep(_config.BeforeClickConfirmDelay);
-                }
-                if (IsUseInteractionKey)
-                {
-                    InputHub.Background.SimulateAction(GIActions.PickUpOrInteract); // 注意这里不是交互键 NOTE By Ayu0K: 这里确实是交互键
-                }
-                else
-                {
-                    PressDialogueConfirm();
-                }
-            }
-
-            // 对话选项选择
             bool hasOption;
-            if (InputHub.Backend.Kind == InputBackendKind.Gamepad
-                || UseBackgroundOperation
-                || IsUseInteractionKey)
+            if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
             {
+                // 控制器选项页必须先读取焦点选项，再发送确认键；先确认会直接提交当前焦点，
+                // 导致后续模板识别不到选项，尤其是第一项已经默认获得焦点时。
                 hasOption = ChatOptionChooseUseKey(content.CaptureRectArea);
+                if (!hasOption && _config.QuicklySkipConversationsEnabled)
+                {
+                    if (_config.BeforeClickConfirmDelay > 0)
+                    {
+                        Thread.Sleep(_config.BeforeClickConfirmDelay);
+                    }
+
+                    if (IsUseInteractionKey)
+                    {
+                        InputHub.Background.SimulateAction(GIActions.PickUpOrInteract);
+                    }
+                    else
+                    {
+                        PressDialogueConfirm();
+                    }
+                }
             }
             else
             {
-                hasOption = ChatOptionChoose(content.CaptureRectArea);
+                if (_config.QuicklySkipConversationsEnabled)
+                {
+                    if (_config.BeforeClickConfirmDelay > 0)
+                    {
+                        // 在触发点击动作之前延迟时间
+                        Thread.Sleep(_config.BeforeClickConfirmDelay);
+                    }
+                    if (IsUseInteractionKey)
+                    {
+                        InputHub.Background.SimulateAction(GIActions.PickUpOrInteract); // 注意这里不是交互键 NOTE By Ayu0K: 这里确实是交互键
+                    }
+                    else
+                    {
+                        PressDialogueConfirm();
+                    }
+                }
+
+                // 键鼠流程保持原有的确认后识别顺序。
+                hasOption = UseBackgroundOperation || IsUseInteractionKey
+                    ? ChatOptionChooseUseKey(content.CaptureRectArea)
+                    : ChatOptionChoose(content.CaptureRectArea);
             }
 
 

@@ -48,8 +48,10 @@
     },
     "OptionIcon": {
       "type": "TemplateMatch",
-      "template": "icon_option.png",
+      "template": "dialog_option.png",
       "roi": "@option",
+      "threshold": 0.86,
+      "useMask": true,
       "draw": false
     },
     "DailyRewardIcon": {
