@@ -35,12 +35,10 @@ public sealed class GamepadFocusNavigator(IInputChannel channel) : IGamepadFocus
             return;
         }
 
-        // 先回到列表顶部，再按识别结果的视觉顺序下移。具体焦点初始位置需用实机截图确认。
-        for (var i = 0; i < optionCount; i++)
-        {
-            Up();
-        }
-
+        // 原神打开对话选项时默认焦点在第一项。
+        // 之前先按 optionCount 次上键试图“归位”，会在循环焦点列表中绕回第二项，
+        // 导致“优先选择第一个选项”实际确认了第二项。
+        // 从默认焦点开始按视觉顺序下移即可；optionIndex 为 0 时不发送方向键。
         for (var i = 0; i < Math.Clamp(optionIndex, 0, optionCount - 1); i++)
         {
             Down();

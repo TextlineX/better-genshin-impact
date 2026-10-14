@@ -366,6 +366,26 @@ public static partial class Bv
                 return true;
             }
 
+            // 确认提示是控制器对话界面的稳定模板。优先使用模板，
+            // 避免主界面每 120ms 都进入 Paddle OCR 兜底，造成实时触发器阻塞。
+            using var gamepadConfirmIcon = captureRa.Find(RecognitionAssets.Get(
+                "AutoSkip",
+                "GamepadDialogueConfirmIcon",
+                captureRa.Width,
+                captureRa.Height));
+            if (gamepadConfirmIcon.IsExist())
+            {
+                return true;
+            }
+
+            // 主界面存在派蒙菜单图标时不可能是对话界面，直接结束判断，
+            // 避免为了兼容自定义确认键在普通游戏画面上反复 OCR。
+            using var paimonMenu = captureRa.Find(ElementRecognition.Get("PaimonMenu", captureRa));
+            if (paimonMenu.IsExist())
+            {
+                return false;
+            }
+
             // 自定义确认键可能不是 A，保留 OCR 兜底，但不要在每一帧重复调用 Paddle。
             // 120ms 的节流只增加一帧级别的识别延迟，不会影响剧情确认动作。
             lock (GamepadTalkUiOcrLock)
