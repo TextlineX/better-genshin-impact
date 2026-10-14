@@ -389,6 +389,14 @@ public partial class CommonSettingsPageViewModel : ViewModel
         keyBindingsWindow.ShowDialog();
     }
 
+    [RelayCommand]
+    private void OpenGamepadSettingsWindow()
+    {
+        var gamepadSettingsWindow = App.GetService<GamepadSettingsWindow>();
+        gamepadSettingsWindow.Owner = Application.Current.MainWindow;
+        gamepadSettingsWindow.ShowDialog();
+    }
+
 
     [RelayCommand]
     private async Task CheckUpdateAsync()

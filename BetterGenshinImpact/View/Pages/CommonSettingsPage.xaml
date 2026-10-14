@@ -1262,6 +1262,44 @@
             </StackPanel>
         </ui:CardExpander>
 
+        <!--  手柄输入  -->
+        <ui:CardExpander Margin="0,0,0,12"
+                         ContentPadding="0">
+            <ui:CardExpander.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock Grid.Row="0"
+                                  Grid.Column="0"
+                                  FontTypography="Body"
+                                  Text="手柄输入设置"
+                                  TextWrapping="Wrap" />
+                    <ui:TextBlock Grid.Row="1"
+                                  Grid.Column="0"
+                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                  Text="选择 ViGEm 虚拟 Xbox 控制器，并配置拾取、菜单和战斗动作的手柄按钮"
+                                  TextWrapping="Wrap" />
+                    <ui:Button Grid.Row="0"
+                               Grid.RowSpan="2"
+                               Grid.Column="1"
+                               Margin="0,0,20,0"
+                               Command="{Binding OpenGamepadSettingsWindowCommand}"
+                               Content="配置" />
+                </Grid>
+            </ui:CardExpander.Header>
+            <StackPanel Margin="16">
+                <ui:TextBlock Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                              Text="手柄配置与键鼠配置分开保存。切换输入后端后需要重启 BetterGI 或重新绑定游戏。"
+                              TextWrapping="Wrap" />
+            </StackPanel>
+        </ui:CardExpander>
+
         <!--  地图追踪设置  -->
         <ui:CardControl Margin="0,0,0,12" Icon="{ui:SymbolIcon DataTreemap24}">
             <ui:CardControl.Header>

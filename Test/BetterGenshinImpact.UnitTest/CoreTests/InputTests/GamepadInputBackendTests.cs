@@ -48,6 +48,19 @@ public class GamepadInputBackendTests
         Assert.Equal(0, device.Triggers[GamepadTrigger.Right]);
     }
 
+    [Fact]
+    public void DefaultMapping_UsesXboxControlsForCoreGameActions()
+    {
+        var mapping = GamepadMappingConfig.CreateDefault();
+
+        Assert.Equal(GamepadButton.A, mapping.Actions[GIActions.Jump].Button);
+        Assert.Equal(GamepadButton.X, mapping.Actions[GIActions.PickUpOrInteract].Button);
+        Assert.Equal(GamepadButton.A, mapping.Actions[GIActions.MenuConfirm].Button);
+        Assert.Equal(GamepadButton.B, mapping.Actions[GIActions.MenuCancel].Button);
+        Assert.Equal(GamepadTrigger.Right, mapping.Actions[GIActions.NormalAttack].Trigger);
+        Assert.Equal(GamepadAxis.LeftThumbY, mapping.Actions[GIActions.MoveForward].Axis);
+    }
+
     private sealed class RecordingGamepadDevice : IGamepadDevice
     {
         public Dictionary<GamepadButton, bool> Buttons { get; } = new();
