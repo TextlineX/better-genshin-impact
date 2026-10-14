@@ -368,9 +368,13 @@ public partial class HomePageViewModel : ViewModel, IDisposable
         _logger.LogInformation("遮罩窗口已启动，游戏大小{Width}x{Height}，素材缩放{Scale}，DPI缩放{Dpi}",
             width, height, systemInfo.AssetScale.ToString("F"), dpiScale);
 
-        if (width * 9 != height * 16)
+        if (!AssertUtils.IsSupportedGameAspectRatio(width, height))
         {
-            _logger.LogError("当前游戏分辨率不是16:9，一条龙、配队识别、地图传送、地图追踪等所有独立任务与全自动任务相关功能，都将会无法正常使用！");
+            _logger.LogError("当前游戏比例不受支持：{Width}x{Height}。目前支持 16:9 与 16:10，部分独立任务与全自动任务可能无法正常使用！", width, height);
+        }
+        else if (AssertUtils.Is16By10(width, height))
+        {
+            _logger.LogInformation("检测到 16:10 游戏画面，已使用 16:10 坐标映射；未提供对应素材的任务仍可能需要单独适配。");
         }
 
         // MSIAfterburner.exe 在左上角会导致识别失败

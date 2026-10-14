@@ -378,11 +378,11 @@ public partial class AutoDomainTask : ISoloTask<Dictionary<string, int>>
     private void LogScreenResolution()
     {
         var gameScreenSize = SystemControl.GetGameScreenRect(TaskContext.Instance().GameHandle);
-        if (gameScreenSize.Width * 9 != gameScreenSize.Height * 16)
+        if (!AssertUtils.IsSupportedGameAspectRatio(gameScreenSize.Width, gameScreenSize.Height))
         {
-            Logger.LogError("游戏窗口分辨率不是 16:9 ！当前分辨率为 {Width}x{Height} , 非 16:9 分辨率的游戏无法正常使用自动秘境功能 !",
+            Logger.LogError("游戏窗口比例不受支持！当前分辨率为 {Width}x{Height}，目前支持 16:9 与 16:10，无法正常使用自动秘境功能！",
                 gameScreenSize.Width, gameScreenSize.Height);
-            throw new Exception("游戏窗口分辨率不是 16:9");
+            throw new Exception("游戏窗口比例不受支持，目前支持 16:9 与 16:10");
         }
 
         if (gameScreenSize.Width < 1920 || gameScreenSize.Height < 1080)
