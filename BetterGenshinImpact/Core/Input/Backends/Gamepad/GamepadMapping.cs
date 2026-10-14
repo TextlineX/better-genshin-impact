@@ -175,6 +175,31 @@ public sealed class GamepadMappingConfig
         };
     }
 
+    /// <summary>
+    /// 补齐旧版本配置中尚未保存的新动作映射，但保留用户已经修改过的映射。
+    /// 配置文件可能来自新增手柄支持之前的版本，不能要求用户先打开设置页再启动任务。
+    /// </summary>
+    public bool EnsureDefaults()
+    {
+        var changed = false;
+        if (Actions is null)
+        {
+            Actions = new Dictionary<GIActions, GamepadControl>();
+            changed = true;
+        }
+
+        foreach (var (action, defaultControl) in CreateDefaultActions())
+        {
+            if (!Actions.TryGetValue(action, out var control) || control is null)
+            {
+                Actions[action] = defaultControl;
+                changed = true;
+            }
+        }
+
+        return changed;
+    }
+
     public bool TryGet(GIActions action, out GamepadControl control) => Actions.TryGetValue(action, out control!);
 }
 

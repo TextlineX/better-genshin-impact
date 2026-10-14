@@ -82,6 +82,8 @@ public sealed class Win32RuntimeProvider(
             }
 
             var config = configService.Get();
+            config.GamepadMappingConfig ??= GamepadMappingConfig.CreateDefault();
+            config.GamepadMappingConfig.EnsureDefaults();
             capture = GameCaptureFactory.Create(GetCaptureMode(config));
             capture.Start(hWnd, GameCaptureSettings.From(config));
             IInputBackend input = config.InputBackend switch

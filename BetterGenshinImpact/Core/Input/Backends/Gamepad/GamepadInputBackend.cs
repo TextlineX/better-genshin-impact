@@ -43,6 +43,10 @@ public sealed class GamepadInputBackend : IInputBackend
 
 internal sealed class GamepadChannel : InputChannelBase
 {
+    // 原神按帧轮询控制器状态。虚拟手柄如果在同一个调用栈内按下并释放，
+    // 游戏可能完全看不到这次输入，因此短按必须跨过至少一个轮询窗口。
+    private const int KeyPressDurationMs = 80;
+
     private readonly object _stateLock = new();
     private readonly IGamepadDevice _device;
     private readonly GamepadMappingConfig _mapping;
@@ -91,6 +95,7 @@ internal sealed class GamepadChannel : InputChannelBase
                 SetAction(action, true);
                 if (!wasPressed)
                 {
+                    Thread.Sleep(KeyPressDurationMs);
                     SetAction(action, false);
                 }
                 break;

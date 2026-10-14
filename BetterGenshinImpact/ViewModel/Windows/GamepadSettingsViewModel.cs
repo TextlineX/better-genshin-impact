@@ -318,6 +318,7 @@ public sealed partial class GamepadSettingsViewModel : ObservableObject
         _configService = configService;
         Config = configService.Get();
         Config.GamepadMappingConfig ??= GamepadMappingConfig.CreateDefault();
+        Config.GamepadMappingConfig.EnsureDefaults();
 
         InputBackends =
         [
@@ -325,17 +326,10 @@ public sealed partial class GamepadSettingsViewModel : ObservableObject
             new(InputBackendKind.Gamepad, "手柄（ViGEm Xbox 360）"),
         ];
 
-        var defaults = GamepadMappingConfig.CreateDefault().Actions;
         foreach (var action in Enum.GetValues<GIActions>())
         {
-            defaults.TryGetValue(action, out var defaultControl);
-            defaultControl ??= GamepadControl.UnmappedControl();
-
-            if (!Config.GamepadMappingConfig.Actions.TryGetValue(action, out var control))
-            {
-                control = Clone(defaultControl);
-                Config.GamepadMappingConfig.Actions[action] = control;
-            }
+            Config.GamepadMappingConfig.Actions.TryGetValue(action, out var control);
+            control ??= GamepadControl.UnmappedControl();
 
             Mappings.Add(new GamepadMappingSettingItem(
                 action,

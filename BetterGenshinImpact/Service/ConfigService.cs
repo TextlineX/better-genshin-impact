@@ -1,4 +1,5 @@
 using BetterGenshinImpact.Core.Config;
+using BetterGenshinImpact.Core.Input.Backends.Gamepad;
 using BetterGenshinImpact.Service.Interface;
 using BetterGenshinImpact.View.Windows;
 using OpenCvSharp;
@@ -188,6 +189,8 @@ public class ConfigService : IConfigService
                 return new AllConfig();
             }
 
+            config.GamepadMappingConfig ??= GamepadMappingConfig.CreateDefault();
+            config.GamepadMappingConfig.EnsureDefaults();
             config.AutoPickConfig.MigrateLegacyConfig();
             Config = config;
             return config;

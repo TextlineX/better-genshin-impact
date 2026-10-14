@@ -1,6 +1,7 @@
 using BetterGenshinImpact.Core.Config;
 using BetterGenshinImpact.Core.Input.Backends.Gamepad;
 using BetterGenshinImpact.Core.Simulator.Extensions;
+using System.Diagnostics;
 using System.Collections.Generic;
 using Vanara.PInvoke;
 
@@ -18,6 +19,20 @@ public class GamepadInputBackendTests
         Assert.True(device.Buttons[GamepadButton.A]);
 
         backend.Foreground.SimulateAction(GIActions.Jump, KeyType.KeyUp);
+        Assert.False(device.Buttons[GamepadButton.A]);
+    }
+
+    [Fact]
+    public void KeyPress_KeepsVirtualButtonDownAcrossAGamePollingWindow()
+    {
+        var device = new RecordingGamepadDevice();
+        using var backend = new GamepadInputBackend(device);
+        var stopwatch = Stopwatch.StartNew();
+
+        backend.Foreground.SimulateAction(GIActions.MenuConfirm);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds >= 70);
         Assert.False(device.Buttons[GamepadButton.A]);
     }
 
@@ -61,6 +76,24 @@ public class GamepadInputBackendTests
         Assert.Equal(GamepadControlKind.Unmapped, mapping.Actions[GIActions.SwitchMember5].Kind);
         Assert.Equal(GamepadTrigger.Right, mapping.Actions[GIActions.NormalAttack].Trigger);
         Assert.Equal(GamepadAxis.LeftThumbY, mapping.Actions[GIActions.MoveForward].Axis);
+    }
+
+    [Fact]
+    public void EnsureDefaults_FillsMissingActionsWithoutOverwritingCustomMappings()
+    {
+        var mapping = new GamepadMappingConfig
+        {
+            Actions = new Dictionary<GIActions, GamepadControl>
+            {
+                [GIActions.PickUpOrInteract] = GamepadControl.TriggerControl(GamepadTrigger.Left),
+            },
+        };
+
+        Assert.True(mapping.EnsureDefaults());
+        Assert.Equal(GamepadControlKind.Trigger, mapping.Actions[GIActions.PickUpOrInteract].Kind);
+        Assert.Equal(GamepadTrigger.Left, mapping.Actions[GIActions.PickUpOrInteract].Trigger);
+        Assert.Equal(GamepadButton.A, mapping.Actions[GIActions.MenuConfirm].Button);
+        Assert.False(mapping.EnsureDefaults());
     }
 
     [Fact]
