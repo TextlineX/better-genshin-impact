@@ -79,6 +79,30 @@ public class GamepadInputBackendTests
         Assert.Equal(byte.MaxValue, device.Triggers[GamepadTrigger.Right]);
     }
 
+    [Fact]
+    public void UnmappedAction_DoesNotSendAnArbitraryButton()
+    {
+        var mapping = GamepadMappingConfig.CreateDefault();
+        var device = new RecordingGamepadDevice();
+        using var backend = new GamepadInputBackend(device, mapping);
+
+        backend.Foreground.SimulateAction(GIActions.MusicNote1);
+
+        Assert.DoesNotContain(device.ButtonPresses, pair => pair.Value > 0);
+    }
+
+    [Fact]
+    public void MouseDelta_ReturnsRightStickToCenter()
+    {
+        var device = new RecordingGamepadDevice();
+        using var backend = new GamepadInputBackend(device);
+
+        backend.Foreground.Mouse.MoveMouseBy(20, 0);
+
+        Assert.Equal(0, device.Axes[GamepadAxis.RightThumbX]);
+        Assert.Equal(0, device.Axes[GamepadAxis.RightThumbY]);
+    }
+
     private sealed class RecordingGamepadDevice : IGamepadDevice
     {
         public Dictionary<GamepadButton, bool> Buttons { get; } = new();

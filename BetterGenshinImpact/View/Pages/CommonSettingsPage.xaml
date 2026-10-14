@@ -1285,17 +1285,11 @@
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                                   Text="选择 ViGEm 虚拟 Xbox 控制器，并配置拾取、菜单和战斗动作的手柄按钮"
                                   TextWrapping="Wrap" />
-                    <ui:Button Grid.Row="0"
-                               Grid.RowSpan="2"
-                               Grid.Column="1"
-                               Margin="0,0,20,0"
-                               Command="{Binding OpenGamepadSettingsWindowCommand}"
-                               Content="配置" />
                 </Grid>
             </ui:CardExpander.Header>
             <StackPanel Margin="16">
                 <ui:TextBlock Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                              Text="手柄配置与键鼠配置分开保存。切换输入后端后需要重启 BetterGI 或重新绑定游戏。"
+                              Text="手柄按钮已集成到“设置 → 按键设置”的手柄绑定列；每个动作可在同一行下拉选择按钮或未映射。"
                               TextWrapping="Wrap" />
             </StackPanel>
         </ui:CardExpander>

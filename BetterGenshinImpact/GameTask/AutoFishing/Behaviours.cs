@@ -3,6 +3,7 @@ using BetterGenshinImpact.Core.Recognition.OCR;
 using BetterGenshinImpact.Core.Recognition.ONNX;
 using BetterGenshinImpact.Core.Recognition.OpenCv;
 using BetterGenshinImpact.Core.Simulator;
+using BetterGenshinImpact.Core.Simulator.Extensions;
 using BetterGenshinImpact.GameTask.AutoFishing.Model;
 using BetterGenshinImpact.GameTask.Common;
 using BetterGenshinImpact.GameTask.Common.Job;
@@ -198,7 +199,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                 chooseBaitUIOpenWaitEndTime = timeProvider.GetLocalNow().AddSeconds(3);
                 logger.LogInformation("打开换饵界面");
                 ChooseBaitUIOpening.Set(true);
-                input.Mouse.RightButtonClick();
+                input.FishingSecondaryClick();
                 sleep(100);
                 input.Mouse.MoveMouseBy(0, 200); // 鼠标移走，防止干扰
                 sleep(500);
@@ -249,7 +250,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
             if (timeProvider.GetLocalNow() >= chooseBaitUIOpenWaitEndTime)
             {
                 logger.LogWarning("没有找到目标鱼饵");
-                input.Keyboard.KeyPress(VK.VK_ESCAPE);
+                input.FishingCancel();
                 ChooseBaitUIOpening.Set(false);
                 logger.LogInformation("退出换饵界面");
 
@@ -352,7 +353,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
 
         protected override void Initialize()
         {
-            input.Mouse.LeftButtonDown();
+            input.FishingPrimaryDown();
             PitchReset.Set(true);
             logger.LogInformation("长按举起鱼竿");
         }
@@ -361,7 +362,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
         {
             // todo 这个方案不能令人满意，应该是底层做一个事件监听来记录被点击，底层向上暴露一个和Timer用起来差不多的东西，它应该有个开始记录方法、有个获取从开始到目前是否被点击的方法
             // 但说到底，检查是否鼠标被干扰，不是一个必选的方法。做一个精确度高的图形检测方案，来检测当前位于哪个步骤，会更好。
-            if (!input.IsKeyDown(VK.VK_LBUTTON))
+            if (!input.IsFishingPrimaryDown())
             {
                 logger.LogWarning("检测到当前鼠标左键状态不符合要求，可能受到干扰，退出任务");
                 Abort.Set(true);
@@ -469,7 +470,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
             mouseMoveI *= -1;
             mouseMoveR = 0d;
 
-            input.Mouse.LeftButtonDown();
+            input.FishingPrimaryDown();
             PitchReset.Set(true);
             logger.LogInformation("长按举起鱼竿");
         }
@@ -752,7 +753,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
             if (castDelay == null)
             {
                 logger.LogInformation("抛竿");
-                input.Mouse.LeftButtonUp();
+                input.FishingPrimaryUp();
                 castDelay = timeProvider.GetLocalNow();
                 return Status.Running;
             }
@@ -857,7 +858,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                 {
                     logger.LogInformation($"{seconds}秒没有咬杆，本次收杆");
                     leftButtonClicked = true;
-                    input.Mouse.LeftButtonClick();
+                    input.FishingPrimaryClick();
                     waitFishBiteTimeout = timeProvider.GetLocalNow().AddSeconds(2);
                     return Status.Running;
                 }
@@ -1044,7 +1045,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                 if (!(waitBiteButton.IsEmpty() && liftRodButton.IsEmpty()))
                 {
                     logger.LogInformation("提竿");
-                    input.Mouse.LeftButtonClick();
+                    input.FishingPrimaryClick();
                     raiseHookDelay = timeProvider.GetLocalNow().AddSeconds(0.8);
                 }
 
@@ -1238,7 +1239,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                     {
                         if (_prevMouseEvent != MOUSEEVENTF.MOUSEEVENTF_LEFTDOWN)
                         {
-                            input.Mouse.LeftButtonDown();
+                            input.FishingPrimaryDown();
                             //input.PostMessage(TaskContext.Instance().GameHandle).LeftButtonDown();
                             _prevMouseEvent = MOUSEEVENTF.MOUSEEVENTF_LEFTDOWN;
                             //Debug.WriteLine("进度不到 左键按下");
@@ -1248,7 +1249,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                     {
                         if (_prevMouseEvent == MOUSEEVENTF.MOUSEEVENTF_LEFTDOWN)
                         {
-                            input.Mouse.LeftButtonUp();
+                            input.FishingPrimaryUp();
                             //input.PostMessage(TaskContext.Instance().GameHandle).LeftButtonUp();
                             _prevMouseEvent = MOUSEEVENTF.MOUSEEVENTF_LEFTUP;
                             //Debug.WriteLine("进度超出 左键松开");
@@ -1269,7 +1270,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                     {
                         if (_prevMouseEvent == MOUSEEVENTF.MOUSEEVENTF_LEFTDOWN)
                         {
-                            input.Mouse.LeftButtonUp();
+                            input.FishingPrimaryUp();
                             //input.PostMessage(TaskContext.Instance().GameHandle).LeftButtonUp();
                             _prevMouseEvent = MOUSEEVENTF.MOUSEEVENTF_LEFTUP;
                             //Debug.WriteLine("进入框内中间 左键松开");
@@ -1279,7 +1280,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                     {
                         if (_prevMouseEvent != MOUSEEVENTF.MOUSEEVENTF_LEFTDOWN)
                         {
-                            input.Mouse.LeftButtonDown();
+                            input.FishingPrimaryDown();
                             //input.PostMessage(TaskContext.Instance().GameHandle).LeftButtonDown();
                             _prevMouseEvent = MOUSEEVENTF.MOUSEEVENTF_LEFTDOWN;
                             //Debug.WriteLine("未到框内中间 左键按下");
@@ -1312,7 +1313,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                 logger.LogInformation(@"└------------------------┘");
 
                 // 保证鼠标松开
-                input.Mouse.LeftButtonUp();
+                input.FishingPrimaryUp();
 
 
                 return Status.Success;

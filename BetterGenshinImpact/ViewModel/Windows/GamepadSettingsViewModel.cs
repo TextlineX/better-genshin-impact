@@ -52,6 +52,7 @@ public sealed partial class GamepadMappingSettingItem : ObservableObject
         new(GamepadControlKind.Button, "按钮"),
         new(GamepadControlKind.Axis, "摇杆轴"),
         new(GamepadControlKind.Trigger, "扳机"),
+        new(GamepadControlKind.Unmapped, "未映射"),
     ];
 
     public IReadOnlyList<GamepadOption<GamepadButton>> ButtonOptions { get; } =
@@ -171,6 +172,7 @@ public sealed partial class GamepadMappingSettingItem : ObservableObject
             GamepadControlKind.Button => GamepadControl.ButtonControl(SelectedButton.Value),
             GamepadControlKind.Axis => GamepadControl.AxisControl(SelectedAxis.Value, SelectedAxisValue.Value),
             GamepadControlKind.Trigger => GamepadControl.TriggerControl(SelectedTrigger.Value, SelectedTriggerValue.Value),
+            GamepadControlKind.Unmapped => GamepadControl.UnmappedControl(),
             _ => throw new ArgumentOutOfRangeException(),
         };
 
@@ -283,6 +285,30 @@ public sealed partial class GamepadSettingsViewModel : ObservableObject
         [GIActions.MenuLeft] = "菜单焦点向左",
         [GIActions.MenuConfirm] = "菜单确认",
         [GIActions.MenuCancel] = "菜单取消",
+        [GIActions.OpenAdventurerHandbook] = "打开冒险之证",
+        [GIActions.OpenCoOpScreen] = "打开多人游戏",
+        [GIActions.OpenWishScreen] = "打开祈愿",
+        [GIActions.OpenBattlePassScreen] = "打开纪行",
+        [GIActions.OpenTheEventsMenu] = "打开活动面板",
+        [GIActions.OpenTheSettingsMenu] = "打开玩法系统",
+        [GIActions.OpenTheFurnishingScreen] = "打开摆设界面",
+        [GIActions.OpenStellarReunion] = "打开星之归还",
+        [GIActions.OpenQuestMenu] = "打开任务菜单",
+        [GIActions.OpenNotificationDetails] = "打开通知详情",
+        [GIActions.OpenChatScreen] = "打开聊天",
+        [GIActions.OpenSpecialEnvironmentInformation] = "打开特殊环境说明",
+        [GIActions.CheckTutorialDetails] = "查看教程详情",
+        [GIActions.ElementalSight] = "元素视野",
+        [GIActions.ShowCursor] = "呼出鼠标",
+        [GIActions.OpenFriendsScreen] = "打开好友界面",
+        [GIActions.HideUI] = "隐藏主界面",
+        [GIActions.FishingPrimaryAction] = "钓鱼主要交互",
+        [GIActions.MusicNote1] = "音游音符 1",
+        [GIActions.MusicNote2] = "音游音符 2",
+        [GIActions.MusicNote3] = "音游音符 3",
+        [GIActions.MusicNote4] = "音游音符 4",
+        [GIActions.MusicNote5] = "音游音符 5",
+        [GIActions.MusicNote6] = "音游音符 6",
     };
 
     private readonly IConfigService _configService;
@@ -302,10 +328,8 @@ public sealed partial class GamepadSettingsViewModel : ObservableObject
         var defaults = GamepadMappingConfig.CreateDefault().Actions;
         foreach (var action in Enum.GetValues<GIActions>())
         {
-            if (!defaults.TryGetValue(action, out var defaultControl))
-            {
-                continue;
-            }
+            defaults.TryGetValue(action, out var defaultControl);
+            defaultControl ??= GamepadControl.UnmappedControl();
 
             if (!Config.GamepadMappingConfig.Actions.TryGetValue(action, out var control))
             {
@@ -388,6 +412,12 @@ public sealed partial class GamepadSettingsViewModel : ObservableObject
 
     private void SendTestAction(GIActions action)
     {
+        if (!Config.GamepadMappingConfig.TryGet(action, out var control)
+            || control.Kind == GamepadControlKind.Unmapped)
+        {
+            throw new InvalidOperationException("该动作尚未映射手柄控件，请先点击“录入”或选择控件");
+        }
+
         if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
         {
             InputHub.Backend.Foreground.SimulateAction(action, KeyType.Hold);
@@ -403,6 +433,7 @@ public sealed partial class GamepadSettingsViewModel : ObservableObject
         GamepadControlKind.Button => GamepadControl.ButtonControl(source.Button),
         GamepadControlKind.Axis => GamepadControl.AxisControl(source.Axis, source.AxisValue),
         GamepadControlKind.Trigger => GamepadControl.TriggerControl(source.Trigger, source.TriggerValue),
+        GamepadControlKind.Unmapped => GamepadControl.UnmappedControl(),
         _ => throw new ArgumentOutOfRangeException(),
     };
 }

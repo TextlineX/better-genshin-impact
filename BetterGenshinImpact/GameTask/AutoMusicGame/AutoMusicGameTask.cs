@@ -1,6 +1,8 @@
 ﻿using BetterGenshinImpact.Core.Input;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
+using BetterGenshinImpact.Core.Input.Backends.Gamepad;
+using BetterGenshinImpact.Core.Simulator.Extensions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -295,12 +297,41 @@ public class AutoMusicGameTask(AutoMusicGameParam taskParam) : ISoloTask
 
     private void KeyUp(User32.VK key)
     {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad && TryGetMusicAction(key, out var action))
+        {
+            InputHub.Foreground.SimulateAction(action, KeyType.KeyUp);
+            return;
+        }
+
         InputHub.Foreground.Keyboard.KeyUp(key);
     }
 
     private void KeyDown(User32.VK key)
     {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad && TryGetMusicAction(key, out var action))
+        {
+            InputHub.Foreground.SimulateAction(action, KeyType.KeyDown);
+            return;
+        }
+
         InputHub.Foreground.Keyboard.KeyDown(key);
+    }
+
+    private static bool TryGetMusicAction(User32.VK key, out GIActions action)
+    {
+        action = key switch
+        {
+            User32.VK.VK_A => GIActions.MusicNote1,
+            User32.VK.VK_S => GIActions.MusicNote2,
+            User32.VK.VK_D => GIActions.MusicNote3,
+            User32.VK.VK_J => GIActions.MusicNote4,
+            User32.VK.VK_K => GIActions.MusicNote5,
+            User32.VK.VK_L => GIActions.MusicNote6,
+            _ => default,
+        };
+
+        return key is User32.VK.VK_A or User32.VK.VK_S or User32.VK.VK_D
+            or User32.VK.VK_J or User32.VK.VK_K or User32.VK.VK_L;
     }
 
     public static void Init()

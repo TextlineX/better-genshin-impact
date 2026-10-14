@@ -50,6 +50,7 @@ internal sealed class GamepadChannel : InputChannelBase
     private readonly Dictionary<GIActions, GamepadControl> _activeActions = new();
     private short _rightThumbX;
     private short _rightThumbY;
+    private long _rightThumbPulseId;
 
     public GamepadChannel(IGamepadDevice device, GamepadMappingConfig mapping, KeyBindingsConfig keyBindings)
     {
@@ -60,9 +61,15 @@ internal sealed class GamepadChannel : InputChannelBase
 
     public override IInputChannel SimulateAction(GIActions action, KeyType type = KeyType.KeyPress)
     {
-        if (!_mapping.TryGet(action, out _))
+        if (!_mapping.TryGet(action, out var control))
         {
-            WarnUnsupported($"动作 {action} 没有手柄映射");
+            WarnUnsupported($"动作 {action} 没有可用的手柄映射，请到“设置 → 按键设置”选择手柄按钮");
+            return this;
+        }
+
+        // “未映射”是用户对控制器不可用动作的明确选择，不是运行时异常。
+        if (control.Kind == GamepadControlKind.Unmapped)
+        {
             return this;
         }
 
@@ -96,6 +103,8 @@ internal sealed class GamepadChannel : InputChannelBase
     {
         return TryResolveAction(key, out var action) && IsActionPressed(action);
     }
+
+    public override bool IsActionDown(GIActions action) => IsActionPressed(action);
 
     protected override void OnKeyDown(User32.VK key)
     {
@@ -134,12 +143,26 @@ internal sealed class GamepadChannel : InputChannelBase
 
     protected override void OnMoveBy(int dx, int dy)
     {
+        var pulseId = Interlocked.Increment(ref _rightThumbPulseId);
         lock (_stateLock)
         {
             _rightThumbX = (short)Math.Clamp(dx * 512, short.MinValue, short.MaxValue);
             _rightThumbY = (short)Math.Clamp(-dy * 512, short.MinValue, short.MaxValue);
-            _device.SetAxis(GamepadAxis.RightThumbX, _rightThumbX);
-            _device.SetAxis(GamepadAxis.RightThumbY, _rightThumbY);
+            RefreshDeviceState();
+        }
+
+        // Mouse movement is a delta, while XInput is a stateful axis. Keep the
+        // virtual stick deflected only for one polling window, then return it to
+        // center so camera control cannot remain stuck.
+        Thread.Sleep(16);
+        lock (_stateLock)
+        {
+            if (pulseId == _rightThumbPulseId)
+            {
+                _rightThumbX = 0;
+                _rightThumbY = 0;
+                RefreshDeviceState();
+            }
         }
     }
 
@@ -160,6 +183,7 @@ internal sealed class GamepadChannel : InputChannelBase
         base.ReleaseAll();
         lock (_stateLock)
         {
+            Interlocked.Increment(ref _rightThumbPulseId);
             _activeActions.Clear();
             _rightThumbX = 0;
             _rightThumbY = 0;
@@ -210,6 +234,8 @@ internal sealed class GamepadChannel : InputChannelBase
                     break;
                 case GamepadControlKind.Trigger:
                     _device.SetTrigger(control.Trigger, control.TriggerValue);
+                    break;
+                case GamepadControlKind.Unmapped:
                     break;
             }
         }

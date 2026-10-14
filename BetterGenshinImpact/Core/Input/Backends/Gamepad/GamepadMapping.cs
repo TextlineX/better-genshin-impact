@@ -9,6 +9,7 @@ public enum GamepadControlKind
     Button,
     Axis,
     Trigger,
+    Unmapped,
 }
 
 public enum GamepadButton
@@ -60,6 +61,11 @@ public sealed class GamepadControl
     public short AxisValue { get; set; } = short.MaxValue;
 
     public byte TriggerValue { get; set; } = byte.MaxValue;
+
+    public static GamepadControl UnmappedControl() => new()
+    {
+        Kind = GamepadControlKind.Unmapped,
+    };
 
     public static GamepadControl ButtonControl(GamepadButton button) => new()
     {
@@ -137,6 +143,33 @@ public sealed class GamepadMappingConfig
                 [GIActions.MenuLeft] = GamepadControl.ButtonControl(GamepadButton.DPadLeft),
                 [GIActions.MenuConfirm] = GamepadControl.ButtonControl(GamepadButton.A),
                 [GIActions.MenuCancel] = GamepadControl.ButtonControl(GamepadButton.B),
+                // Do not guess a controller button for PC-only shortcuts. The action
+                // is still exposed in settings so the user can record a real mapping
+                // for the controller UI they use.
+                [GIActions.OpenAdventurerHandbook] = GamepadControl.UnmappedControl(),
+                [GIActions.OpenCoOpScreen] = GamepadControl.UnmappedControl(),
+                [GIActions.OpenWishScreen] = GamepadControl.UnmappedControl(),
+                [GIActions.OpenBattlePassScreen] = GamepadControl.UnmappedControl(),
+                [GIActions.OpenTheEventsMenu] = GamepadControl.UnmappedControl(),
+                [GIActions.OpenTheSettingsMenu] = GamepadControl.UnmappedControl(),
+                [GIActions.OpenTheFurnishingScreen] = GamepadControl.UnmappedControl(),
+                [GIActions.OpenStellarReunion] = GamepadControl.UnmappedControl(),
+                [GIActions.OpenQuestMenu] = GamepadControl.UnmappedControl(),
+                [GIActions.OpenNotificationDetails] = GamepadControl.UnmappedControl(),
+                [GIActions.OpenChatScreen] = GamepadControl.UnmappedControl(),
+                [GIActions.OpenSpecialEnvironmentInformation] = GamepadControl.UnmappedControl(),
+                [GIActions.CheckTutorialDetails] = GamepadControl.UnmappedControl(),
+                [GIActions.ElementalSight] = GamepadControl.UnmappedControl(),
+                [GIActions.ShowCursor] = GamepadControl.UnmappedControl(),
+                [GIActions.OpenFriendsScreen] = GamepadControl.UnmappedControl(),
+                [GIActions.HideUI] = GamepadControl.UnmappedControl(),
+                [GIActions.FishingPrimaryAction] = GamepadControl.UnmappedControl(),
+                [GIActions.MusicNote1] = GamepadControl.UnmappedControl(),
+                [GIActions.MusicNote2] = GamepadControl.UnmappedControl(),
+                [GIActions.MusicNote3] = GamepadControl.UnmappedControl(),
+                [GIActions.MusicNote4] = GamepadControl.UnmappedControl(),
+                [GIActions.MusicNote5] = GamepadControl.UnmappedControl(),
+                [GIActions.MusicNote6] = GamepadControl.UnmappedControl(),
         };
     }
 

@@ -61,7 +61,7 @@
             <ui:TextBlock Grid.Row="1"
                           Margin="0,0,0,10"
                           Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                          Text="这里配置的是动作到虚拟 Xbox 控制器控件的映射，不是键盘按键。你的原神里改过键位时，点击对应行的“录入”并按下实际手柄键；也可以直接用下拉框选择。"
+                              Text="这里配置的是动作到虚拟 Xbox 控制器控件的映射，不是键盘按键。你的原神里改过键位时，点击对应行的“录入”并按下实际手柄键；也可以直接用下拉框选择。标记为“未映射”的动作不会偷偷发送错误按钮。"
                           TextWrapping="Wrap" />
 
             <Border Grid.Row="2"

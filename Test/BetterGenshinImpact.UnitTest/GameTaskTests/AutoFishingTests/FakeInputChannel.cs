@@ -17,6 +17,8 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
 
         public bool IsKeyDown(User32.VK key) => false;
 
+        public bool IsActionDown(GIActions action) => false;
+
         IInputChannel IInputChannel.Sleep(int ms) => this;
 
         public void ReleaseAll()

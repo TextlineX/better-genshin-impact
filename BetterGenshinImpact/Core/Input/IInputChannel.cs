@@ -22,6 +22,11 @@ public interface IInputChannel
     /// </summary>
     bool IsKeyDown(User32.VK key);
 
+    /// <summary>
+    /// 查询统一动作是否处于按下状态。特殊玩法在手柄后端下不能再用鼠标 VK 查询。
+    /// </summary>
+    bool IsActionDown(GIActions action);
+
     IInputChannel Sleep(int ms);
 
     /// <summary>
