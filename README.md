@@ -1,167 +1,100 @@
-<div align="center">
-  <h1 align="center">
-    <a href="https://www.bettergi.com/"><img src="https://img.alicdn.com/imgextra/i4/2042484851/O1CN016PuRSW1lhoOl4tcHS_!!2042484851.png" width="190"></a>
-    <br/>
-    <a href="https://www.bettergi.com/">BetterGI</a>
-  </h1>
-  <a href="https://trendshift.io/repositories/5269" target="_blank"><img src="https://trendshift.io/api/badge/repositories/5269" alt="babalae%2Fbetter-genshin-impact | Trendshift" style="width: 200px; height: 46px;" width="250" height="46"/></a>
-</div>
-
-<br/>
+# BetterGI · TextlineX 独立适配版
 
 <div align="center">
-  <a href="https://dotnet.microsoft.com/zh-cn/download/dotnet/latest/runtime"><img alt="Windows" src="https://img.shields.io/badge/platform-Windows-blue?logo=windowsxp&style=flat-square&color=1E9BFA" /></a>
-  <a href="https://github.com/babalae/better-genshin-impact/releases"><img alt="下载数" src="https://img.shields.io/github/downloads/babalae/better-genshin-impact/total?logo=github&style=flat-square&color=1E9BFA"></a>
-  <a href="https://github.com/babalae/better-genshin-impact/releases"><img alt="Release" src="https://img.shields.io/github/v/release/babalae/better-genshin-impact?logo=visualstudio&style=flat-square&color=1E9BFA"></a>
-</div>
-
-<br/>
-
-
-<div align="center">
-🌟 点一下右上角的 Star，Github 主页就能收到软件更新通知了哦~
-</div>
-
-<div align="center">
-    <img src="https://img.alicdn.com/imgextra/i1/2042484851/O1CN01OL1E1v1lhoM7Wdmup_!!2042484851.gif" alt="Star" width="186" height="60">
+  <a href="https://github.com/TextlineX/better-genshin-impact/releases">
+    <img alt="Release" src="https://img.shields.io/github/v/release/TextlineX/better-genshin-impact?logo=github&style=flat-square&color=1E9BFA">
+  </a>
+  <a href="https://github.com/TextlineX/better-genshin-impact/releases">
+    <img alt="Downloads" src="https://img.shields.io/github/downloads/TextlineX/better-genshin-impact/total?logo=github&style=flat-square&color=1E9BFA">
+  </a>
+  <a href="https://github.com/TextlineX/better-genshin-impact/actions/workflows/publish.yml">
+    <img alt="Build and release" src="https://github.com/TextlineX/better-genshin-impact/actions/workflows/publish.yml/badge.svg">
   </a>
 </div>
 
-<br/>
+BetterGI 是一个通过计算机视觉和模拟输入辅助《原神》的开源项目。本仓库由 [TextlineX](https://github.com/TextlineX) 独立维护，当前版本为 0.66.2-alpha.3。
 
-[English](./Docs/i18n/README.en-US.md) | [中文](./Docs/i18n/README.zh-CN.md) | [繁體中文](./Docs/i18n/README.zh-TW.md) | [日本語](./Docs/i18n/README.ja-JP.md)  
-BetterGI · 更好的原神，一个基于计算机视觉技术，意图让原神变得更好的项目。
+## 这个仓库解决什么问题
 
-## 本仓库说明
+原神切换到控制器模式后，拾取提示、地图、角色 HUD、对话选项和菜单焦点都会改变；用户还可能修改游戏内按键。简单把键盘按键替换成手柄按键，不能保证识别和操作链路正确。因此本仓库围绕以下内容做独立适配：
 
-本仓库是由 [TextlineX](https://github.com/TextlineX) 维护的 BetterGI 独立开发仓库：
-[TextlineX/better-genshin-impact](https://github.com/TextlineX/better-genshin-impact)。
+- 原生支持 16:9 和 16:10 游戏画面：1920x1080、2560x1440、1920x1200、2560x1600。
+- 键鼠模式与控制器模式分开选择，保留原有 Win32 键鼠输入。
+- 控制器模式下的拾取提示、对话选项、地图和基础菜单焦点识别。
+- Xbox/XInput 风格的虚拟 Xbox 360 手柄输出，以及可配置的动作映射。
+- 自动拾取、自动剧情基础确认和基础焦点导航的控制器调用链。
 
-### 仓库目的
+本仓库基于原作者的 [babalae/better-genshin-impact](https://github.com/babalae/better-genshin-impact) 开发。上游项目是原始功能基线；本仓库的代码、Issue、分支和 Release 单独管理，不向上游推送、创建 PR 或执行合并。需要上游原始文档时仍可参考 [bettergi.com](https://www.bettergi.com/)。
 
-本仓库用于在保留 BetterGI 原有键鼠功能的基础上，独立开发和验证以下能力：
+## 当前状态
 
-* 原生支持 `16:9` 与 `16:10` 游戏画面，包括 `1920x1080`、`2560x1440`、`1920x1200` 和 `2560x1600`。
-* 支持原神控制器模式下的 UI 识别、自动拾取、自动剧情基础交互、菜单焦点导航和必要的手柄输入映射。
-* 支持 Xbox/XInput 风格的虚拟手柄输入，同时保留原有 Win32 键鼠输入方式。
+16:9 的原有功能继续保留，16:10 坐标映射和控制器模式基础识别已接入。自动战斗、自动寻路、钓鱼、七圣召唤、复杂菜单以及所有任务在控制器模式下的完整覆盖仍需按页面补充模板和实机验证。单元测试通过只代表代码路径通过，不能代替在你的游戏版本、分辨率、DPI 和自定义按键下运行验证。
 
-### 为什么需要独立开发
+你修改了原神按键时，不需要改回默认按键。BetterGI 的控制器映射位于“设置 → 按键设置”，它映射的是 BetterGI 动作到手柄控制，不读取键盘物理键码；游戏内的自定义按键不会自动生成新的识别素材。控制器模式下，必须在原神中选择“控制器”，在 BetterGI 主界面选择“手柄”输入模式。
 
-原神切换到控制器模式后，拾取提示、地图、角色 HUD、对话选项和菜单焦点都会发生变化；用户还可能修改游戏内可配置按键。仅把键盘按键替换成手柄按键，或者把画面简单裁剪、拉伸，无法保证识别和操作链路正确。因此本仓库将分辨率坐标、控制器 UI 识别 Profile、按键映射和输入后端分别适配，并针对真实截图逐步验证。
+## 下载与自动发布
 
-### 与上游仓库的关系
+正式构建只从本仓库的 [GitHub Releases](https://github.com/TextlineX/better-genshin-impact/releases) 下载。每次向本仓库推送形如 vX.Y.Z 的 tag，.github/workflows/publish.yml 会在 Windows runner 上：
 
-本仓库基于原作者的上游项目 [babalae/better-genshin-impact](https://github.com/babalae/better-genshin-impact) 开发。上游仓库是 BetterGI 的原始项目和功能基线；本仓库是独立维护的实验与适配分支，代码、提交、Issue 和发布由本仓库单独管理。开发成果不会自动写入上游，也不会向上游推送、创建 PR 或执行合并。
+1. 校验 tag 与 BetterGenshinImpact.csproj 的版本号一致。
+2. 编译控制器输入和识别 Profile 的回归测试。
+3. 发布自包含的 Windows x64 压缩包。
+4. 自动创建对应的 GitHub Release；带预发布标识的版本会自动标为 Pre-release。
 
-本仓库保留原项目的 GPL-3.0 许可证、版权声明和致谢信息。涉及上游已有功能的问题，请同时参考上游文档；涉及本仓库的 `16:10`、控制器模式或独立改动，请在本仓库提交 Issue。
+当前示例：v0.66.2-alpha.3。也可以在 GitHub Actions 手动选择一个已经存在的版本 tag 重新构建。旧的上游发布脚本曾依赖上游仓库和外部发布服务，已不再作为本仓库的发布入口。
 
-### 当前适配范围
+## 运行要求
 
-当前已完成控制器输入模式选择、可配置手柄动作、`16:10` 坐标映射、控制器模式下的拾取/地图/对话识别基础 Profile，以及自动拾取、自动剧情基础确认和部分任务输入调用链。自动战斗、自动寻路、钓鱼、七圣召唤和所有复杂菜单仍需按具体页面继续补充模板并进行实机验证；单元测试通过不代表已经覆盖所有游戏场景。
+- Windows 10 或更高版本，64 位。
+- 发布包已包含 .NET 8 运行时；源码运行或框架依赖包需要安装 [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/zh-cn/download/dotnet/8.0)。
+- 控制器模式需要安装并正常运行 [ViGEmBus](https://github.com/ViGEm/ViGEmBus) 驱动。BetterGI 使用 Nefarius.ViGEm.Client 创建虚拟 Xbox 360 控制器，XInput 本身只能读取真实手柄，不能直接发送虚拟输入。
+- 游戏以管理员权限运行时，BetterGI 也可能需要以管理员权限运行。
 
-## 功能
-* 实时任务
-  * [自动拾取](https://www.bettergi.com/feats/timer/pick.html)：遇到可交互/拾取内容时自动按 <kbd>F</kbd>，支持黑白名单配置
-  * [自动剧情](https://www.bettergi.com/feats/timer/skip.html)：快速点击过剧情、自动选择选项、自动提交物品、关闭弹出书页等
-    * 与凯瑟琳对话时有橙色选项会 [自动领取「每日委托」奖励](https://www.bettergi.com/feats/timer/skip.html#%E8%87%AA%E5%8A%A8%E9%A2%86%E5%8F%96%E3%80%8E%E6%AF%8F%E6%97%A5%E5%A7%94%E6%89%98%E3%80%8F%E5%A5%96%E5%8A%B1)、[自动重新派遣](https://www.bettergi.com/feats/timer/skip.html#%E8%87%AA%E5%8A%A8%E9%87%8D%E6%96%B0%E6%B4%BE%E9%81%A3)
-  * [自动邀约](https://www.bettergi.com/feats/timer/skip.html#%E8%87%AA%E5%8A%A8%E9%82%80%E7%BA%A6)：自动剧情开启的情况下此功能才会生效，自动选择邀约选项
-  * [快速传送](https://www.bettergi.com/feats/timer/tp.html)：在地图上点击传送点，或者点击后出现的列表中存在传送点，会自动点击传送点并传送
-  * [半自动钓鱼](https://www.bettergi.com/feats/timer/fish.html)：AI 识别自动抛竿，鱼上钩时自动收杆，并自动完成钓鱼进度
-* 独立任务
-  * [全自动七圣召唤](https://www.bettergi.com/feats/task/tcg.html)：帮助你轻松完成七圣召唤角色邀请、每周来客挑战等 PVE 内容
-  * [自动伐木](https://www.bettergi.com/feats/task/felling.html)：自动 <kbd>Z</kbd> 键使用「王树瑞佑」，利用上下线可以刷新木材的原理，挂机刷满一背包的木材
-  * [自动秘境](https://www.bettergi.com/feats/task/domain.html)：全自动秘境挂机刷体力，自动循环进入秘境开启钥匙、战斗、走到古树并领取奖励
-  * [自动幽境危战](https://www.bettergi.com/feats/task/stygian.html)：自动传送并前往幽境危战，主要用于难度三刷圣遗物
-  * [全自动钓鱼](https://www.bettergi.com/feats/task/fish.html)：在出现钓鱼 <kbd>F</kbd> 按钮的位置面向鱼塘，然后启动全自动钓鱼，启动后程序会自动完成钓鱼，并切换白天和晚上
-  * [自动地脉花](https://www.bettergi.com/feats/task/leyline.html)：自动连续刷地脉花，支持绝大部分地脉花位置。
-  * [自动音游](https://www.bettergi.com/feats/task/music.html)：一键自动完成千音雅集的专辑，快速获取成就
-  * [自动烹饪](https://www.bettergi.com/feats/task/cook.html)：自动在完美区域完成食物烹饪
-  * [自动分解圣遗物](https://www.bettergi.com/feats/task/artifactSalvage.html)：支持 **快速分解** 和 **按匹配规则的圣遗物分解**
-* 全自动
-  * [一条龙](https://github.com/babalae/better-genshin-impact/issues/846)：一键完成日常（使用历练点），并领取奖励
-  * [自动采集/挖矿/锄地](https://www.bettergi.com/feats/autos/pathing.html)：通过左上角小地图的识别，完成自动采集、挖矿、锄地等功能
-  * [键鼠录制](https://www.bettergi.com/feats/autos/kmscript.html)：可以录制回放当前的键鼠操作，建议配合调度器使用
-* 操控辅助
-  * [那维莱特转圈](https://www.bettergi.com/feats/macro/other.html#%E9%82%A3%E7%BB%B4%E8%8E%B1%E7%89%B9-%E8%BD%AC%E5%9C%88%E5%9C%88)：设置快捷键后，长按可以不断水平旋转视角（当然你也可以用来转草神）
-  * [快速圣遗物强化](https://www.bettergi.com/feats/macro/other.html#%E5%9C%A3%E9%81%97%E7%89%A9%E4%B8%80%E9%94%AE%E5%BC%BA%E5%8C%96)：通过快速切换“详情”、“强化”页跳过圣遗物强化结果展示，快速+20
-  * [商店一键购买](https://www.bettergi.com/feats/macro/other.html#%E4%B8%80%E9%94%AE%E8%B4%AD%E4%B9%B0)：可以快速以满数量购买商店中的物品，适合快速清空活动兑换，尘歌壶商店兑换等
-* [**……**](https://www.bettergi.com/doc.html)
+BetterGI 只使用截图识别和模拟输入，不修改原神游戏文件、不读取游戏内存，也不绕过反作弊机制。模拟输入可能被安全软件拦截，请按你的环境加入允许列表；使用第三方模拟输入仍存在被游戏识别的风险。
 
-<div align="center">
-  <img src="https://github.com/babalae/better-genshin-impact/assets/15783049/57ab7c3c-709a-4cf3-8f64-1c78764c364c"/>
-  <p>自带一个遮罩窗口覆盖在游戏界面上，用于显示日志和图像识别结果</p>
-</div>
+## 使用提示
 
-## 截图
+1. 启动 BetterGI，在主界面选择输入模式：键鼠或手柄。
+2. 使用手柄模式时，在原神设置中选择“控制器”，并确认 ViGEmBus 已安装。
+3. 进入游戏后再启动需要的实时任务；切换分辨率、窗口、显示器或输入模式后建议重启 BetterGI。
+4. 当前支持的参考分辨率为 1920x1080、2560x1440、1920x1200、2560x1600。请关闭 HDR、滤镜等会改变画面颜色和布局的效果。
+5. 自动剧情和自动拾取在控制器模式下仍应先用当前页面实测；遇到未识别页面，请保留截图、分辨率、DPI、游戏输入模式和日志后提交 Issue。
 
-![0 59 1](https://github.com/user-attachments/assets/a65aafe9-d8d7-4ffb-8cdc-9939c2fb3bdf)
+## 主要功能
 
+原有功能包括自动拾取、自动剧情、自动邀约、快速传送、半自动/全自动钓鱼、自动伐木、自动秘境、自动地脉花、自动音游、自动烹饪、圣遗物分解、键鼠录制和多种辅助操作。详细说明请参考 [BetterGI 文档](https://www.bettergi.com/doc.html)。控制器模式的适配范围以本 README 的“当前状态”和 Release 说明为准。
 
-## 下载
+## 本地开发
 
-> [!NOTE]
-> 上游正式版本下载：[⚡Github Releases](https://github.com/babalae/better-genshin-impact/releases)
->
-> 本仓库用于独立开发和测试，代码与分支见：[TextlineX/better-genshin-impact](https://github.com/TextlineX/better-genshin-impact)
-> 
-> 不知道下载哪个？第一次使用？请看：[快速上手](https://www.bettergi.com/quickstart.html) ， 遇到问题请先看：[常见问题](https://www.bettergi.com/faq.html)
+需要 .NET 8 SDK、Windows 10 SDK 10.0.22621.0 或更高版本，以及支持 WPF 的 Visual Studio 2022 或 Rider。
 
-上游最新测试版本可以从自动构建中获取： [![](https://github.com/babalae/better-genshin-impact/actions/workflows/publish.yml/badge.svg)](https://github.com/babalae/better-genshin-impact/actions/workflows/publish.yml)
-或者从CNB上直接下载（速度快）：[CNB Releases](https://cnb.cool/bettergi/better-genshin-impact/-/releases)
+    dotnet restore BetterGenshinImpact.sln
+    dotnet build BetterGenshinImpact/BetterGenshinImpact.csproj -c Debug -p:Platform=x64
+    dotnet test Test/BetterGenshinImpact.UnitTest/BetterGenshinImpact.UnitTest.csproj -c Debug --filter "FullyQualifiedName~GamepadInputBackendTests|FullyQualifiedName~RecognitionProfileResolverTests"
 
-## 使用方法
-由于图像识别比较吃性能，低配置电脑可能无法正常使用部分功能。
+完整测试项目中仍有历史识别测试会导致测试宿主异常退出，发布工作流只执行当前控制器输入和识别 Profile 的回归测试；这不等同于完整测试套件全部通过。
 
-推荐的电脑配置至少能够中画质60帧流畅游玩原神，否则部分功能的使用体验会较差。
+## 反馈
 
-你的系统需要满足以下条件：
-  * Windows 10 或更高版本的64位系统
-  * [.NET 8 运行时](https://dotnet.microsoft.com/zh-cn/download/dotnet/latest/runtime) （没有的话，启动程序，系统会提示下载安装）
-
-**⚠️注意：**
-1. 窗口大小变化、切换游戏分辨率、切换显示器的时候请重启本软件。
-2. 不支持任何画面滤镜（HDR、N卡滤镜等）。游戏亮度请保持默认。
-3. 本仓库已适配 `16:9` 和 `16:10` 分辨率，推荐使用 `1920x1080`、`2560x1440`、`1920x1200` 或 `2560x1600`；切换分辨率后请重启本软件。
-4. **模拟操作部分可能被部分安全软件拦截，请加入白名单。已知360或者自定义规则WD会拦截部分类型的模拟点击**
-
-**打开软件以后，在“启动”页选择好截图方式，点击启动按钮就可以享受 BetterGI 带来的便利了！**
-
-详细使用指南请看：[快速上手](https://www.bettergi.com/quickstart.html)
-
-具体功能效果与使用方式见：[文档](https://www.bettergi.com/doc.html)
-
-## FAQ
-* 为什么需要管理员权限？
-  * 因为游戏是以管理员权限启动的，软件不以管理员权限启动的话没有权限模拟鼠标点击。
-* 会不会封号？
-  * 理论上不会被封。 **BetterGI 不会做出任何修改游戏文件、读写游戏内存等任何危害游戏本体的行为，单纯依靠视觉算法和模拟操作实现。** 但是mhy是自由的，用户条款上明确说明第三方软件/模拟操作是封号理由之一。当前方案还是存在被检测的可能。只能说请低调使用，请不要跳脸官方。
-* [更多常见问题...](https://www.bettergi.com/faq.html)
+请在本仓库提交 [Issue](https://github.com/TextlineX/better-genshin-impact/issues)。反馈控制器界面问题时，请附上实际截图和：分辨率、DPI、窗口/全屏状态、原神输入模式、是否修改过按键、BetterGI 日志以及触发的功能。上游项目的问题请提交到 [上游 Issue](https://github.com/babalae/better-genshin-impact/issues)。
 
 ## 致谢
 
-本项目的完成离不开以下项目：
-* [Yap](https://github.com/Alex-Beng/Yap)
-* [genshin-woodmen](https://github.com/genshin-matrix/genshin-woodmen)
-* [Fischless](https://github.com/genshin-matrix/Fischless)
-* [MicaSetup](https://github.com/lemutec/MicaSetup)
-* [cvAutoTrack](https://github.com/GengGode/cvAutoTrack)
-* [genshin_impact_assistant](https://github.com/infstellar/genshin_impact_assistant)
-* [HutaoFisher](https://github.com/myHuTao-qwq/HutaoFisher)
-* [minimap](https://github.com/tignioj/minimap)
-* [kachina-installer](https://github.com/YuehaiTeam/kachina-installer)
+本项目保留上游 BetterGI 的版权声明、GPL-3.0 许可证和致谢信息。感谢以下项目和贡献者：
 
-另外特别感谢 [@Lightczx](https://github.com/Lightczx) 和 [@emako](https://github.com/emako) 对本项目的指导与贡献
+- [babalae/better-genshin-impact](https://github.com/babalae/better-genshin-impact)
+- [Yap](https://github.com/Alex-Beng/Yap)
+- [genshin-woodmen](https://github.com/genshin-matrix/genshin-woodmen)
+- [Fischless](https://github.com/genshin-matrix/Fischless)
+- [MicaSetup](https://github.com/lemutec/MicaSetup)
+- [cvAutoTrack](https://github.com/GengGode/cvAutoTrack)
+- [genshin_impact_assistant](https://github.com/infstellar/genshin_impact_assistant)
+- [HutaoFisher](https://github.com/myHuTao-qwq/HutaoFisher)
+- [minimap](https://github.com/tignioj/minimap)
+- [kachina-installer](https://github.com/YuehaiTeam/kachina-installer)
 
-## 开发者
-
-格式化：[CodeMaid.config](CodeMaid.config)、[Settings.XamlStyler](Settings.XamlStyler)；<br>
-
-[如何编译项目？](BetterGenshinImpact/README.md)
+特别感谢 [@Lightczx](https://github.com/Lightczx) 和 [@emako](https://github.com/emako) 对上游项目的指导与贡献。
 
 ## 许可证
 
-![GPL-v3](https://www.gnu.org/graphics/gplv3-127x51.png)
-
-## 问题反馈
-
-本仓库问题请提 [Issue](https://github.com/TextlineX/better-genshin-impact/issues)；上游项目问题请提 [上游 Issue](https://github.com/babalae/better-genshin-impact/issues)；也可以加入 QQ 群 [761949201](https://qm.qq.com/q/vYdEp5htTi)。
+本项目遵循 [GNU General Public License v3.0](./LICENSE)。
