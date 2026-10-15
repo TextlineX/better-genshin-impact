@@ -50,10 +50,10 @@ public partial class AutoSkipTrigger : ITaskTrigger
     public GameUiCategory SupportedGameUiCategory => GameUiCategory.Talk;
 
     /// <summary>
-    /// 手柄对话的底部确认提示会在转场和文本切换时短暂消失，
-    /// 允许本触发器继续运行，由 OnCapture 再次确认是否处于对话界面。
+    /// 手柄模式必须由 Bv.IsInTalkUi() 确认对话标记后才运行。
+    /// 未知界面包含地图、设置、背包和各种过渡页，不能作为剧情兜底入口。
     /// </summary>
-    public bool RunWhenUiUnknown => InputHub.Backend.Kind == InputBackendKind.Gamepad;
+    public bool RunWhenUiUnknown => false;
 
     /// <summary>
     /// 实时读取当前生效的配置（全局配置或脚本传入的配置）
@@ -239,8 +239,9 @@ public partial class AutoSkipTrigger : ITaskTrigger
 
         // 找左上角剧情自动的按钮
 
-        var isPlaying = content.CurrentGameUiCategory == GameUiCategory.Talk
-                        || Bv.IsInTalkUi(content.CaptureRectArea); // 播放中
+        // 每帧重新确认对话专属标记，不使用调度器分类结果兜底。
+        // 分类结果可能来自上一阶段的识别，不能单独驱动手柄确认键。
+        var isPlaying = Bv.IsInTalkUi(content.CaptureRectArea); // 播放中
 
         // 手柄模式只能通过确认后的剧情专属标记驱动焦点导航和确认键。
         // 菜单、设置、地图等界面也可能显示“确认”，不得执行剧情结束清理、

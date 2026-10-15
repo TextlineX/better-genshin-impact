@@ -7,16 +7,22 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoSkipTests;
 public class AutoSkipSafetyTests
 {
     [Theory]
-    [InlineData(false, false, false)]
-    [InlineData(true, false, true)]
-    [InlineData(false, true, true)]
-    [InlineData(true, true, true)]
+    [InlineData(false, false, false, false)]
+    [InlineData(true, false, false, false)]
+    [InlineData(false, true, true, false)]
+    [InlineData(false, false, true, false)]
+    [InlineData(true, true, false, true)]
+    [InlineData(true, false, true, true)]
     public void GamepadTalkMarker_RequiresDialogueSpecificMarker(
         bool hasDisabledUiButton,
+        bool hasDialogueConfirm,
         bool hasOptionIcon,
         bool expected)
     {
-        Assert.Equal(expected, Bv.HasReliableGamepadTalkMarker(hasDisabledUiButton, hasOptionIcon));
+        Assert.Equal(expected, Bv.HasReliableGamepadTalkMarker(
+            hasDisabledUiButton,
+            hasDialogueConfirm,
+            hasOptionIcon));
     }
 
     [Fact]

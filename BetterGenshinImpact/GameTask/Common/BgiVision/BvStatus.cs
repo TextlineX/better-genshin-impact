@@ -341,18 +341,22 @@ public static partial class Bv
                 return false;
             }
 
-            // 用户提供的手柄剧情截图包含稳定的左下角 UI 图标；模板匹配比 OCR 快很多。
-            // 不能把右下角 A/B/X/Y 按钮当作剧情标志：主界面 HUD 同样长期显示这些按钮，
-            // 否则自动剧情会把普通移动/战斗画面误判成对话并连续发送确认键。
+            // 用户提供的手柄剧情截图包含左下角剧情工具栏，以及右下角绿色 A 确认提示。
+            // 只匹配其中一个会误判：地图、设置和其他菜单也会显示 A/B 确认提示，
+            // 而普通游戏画面也可能保留局部左下角 HUD。
             using var disabledUiButton = captureRa.Find(RecognitionAssets.Get(
                 "AutoSkip",
                 "DisabledUiButton",
                 captureRa.Width,
                 captureRa.Height));
-            if (disabledUiButton.IsExist())
-            {
-                return true;
-            }
+            var hasDisabledUiButton = disabledUiButton.IsExist();
+
+            using var dialogueConfirm = captureRa.Find(RecognitionAssets.Get(
+                "AutoSkip",
+                "GamepadDialogueConfirmIcon",
+                captureRa.Width,
+                captureRa.Height));
+            var hasDialogueConfirm = dialogueConfirm.IsExist();
 
             // 选项页的控制器气泡是独立于左下角剧情工具栏的稳定标志。
             // 选项页可能没有右下角“确认”文字，因此必须作为独立标记判断。
@@ -362,12 +366,12 @@ public static partial class Bv
                 captureRa.Width,
                 captureRa.Height));
 
-            // 设置、背包、地图等界面同样可能在右下角显示“确认”文字，
-            // 不能把单独的确认 OCR 当作剧情信号。手柄剧情必须有专属的
-            // 左下角剧情工具栏或右侧选项气泡，才允许自动剧情继续发送输入。
+            // 设置、背包、地图等界面同样可能在右下角显示 A/B 确认提示，
+            // 不能把单独的确认图标或单独的选项气泡当作剧情信号。
             return HasReliableGamepadTalkMarker(
-                hasDisabledUiButton: disabledUiButton.IsExist(),
-                hasOptionIcon: gamepadOption.IsExist());
+                hasDisabledUiButton,
+                hasDialogueConfirm,
+                gamepadOption.IsExist());
         }
 
         using var ra = captureRa.Find(RecognitionAssets.Get("AutoSkip", "DisabledUiButton", captureRa.Width, captureRa.Height));
@@ -375,11 +379,14 @@ public static partial class Bv
     }
 
     /// <summary>
-    /// 判断手柄截图是否包含不会出现在普通菜单确认页中的剧情专属标记。
+    /// 判断手柄截图是否同时包含剧情工具栏和剧情确认/选项标记。
     /// </summary>
-    internal static bool HasReliableGamepadTalkMarker(bool hasDisabledUiButton, bool hasOptionIcon)
+    internal static bool HasReliableGamepadTalkMarker(
+        bool hasDisabledUiButton,
+        bool hasDialogueConfirm,
+        bool hasOptionIcon)
     {
-        return hasDisabledUiButton || hasOptionIcon;
+        return hasDisabledUiButton && (hasDialogueConfirm || hasOptionIcon);
     }
 
     /// <summary>
