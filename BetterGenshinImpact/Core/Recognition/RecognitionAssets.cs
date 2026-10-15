@@ -3,6 +3,7 @@ using BetterGenshinImpact.Core.Input;
 using BetterGenshinImpact.Core.Recognition.OpenCv;
 using BetterGenshinImpact.GameTask;
 using BetterGenshinImpact.GameTask.Model.Area;
+using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using System;
 using System.Collections.Concurrent;
@@ -12,7 +13,11 @@ namespace BetterGenshinImpact.Core.Recognition;
 
 public static class RecognitionAssets
 {
+    private sealed class LoggerTag;
+
     private static readonly ConcurrentDictionary<RecognitionAssetCacheKey, RecognitionObject> Cache = new();
+    private static readonly ConcurrentDictionary<string, byte> ProfileFallbackWarnings = new();
+    private static readonly ILogger Logger = App.GetLogger<LoggerTag>();
 
     public static IRecognitionProfileResolver ProfileResolver { get; set; } =
         new DefaultRecognitionProfileResolver(() => InputHub.Backend.Kind == InputBackendKind.Gamepad
@@ -33,7 +38,9 @@ public static class RecognitionAssets
 
     public static RecognitionObject Get(string taskName, string objectName, int captureWidth, int captureHeight)
     {
-        var key = new RecognitionAssetCacheKey(taskName, objectName, captureWidth, captureHeight, ProfileResolver.CurrentProfile);
+        var profile = ProfileResolver.CurrentProfile;
+        WarnIfGamepadProfileMissing(taskName, captureWidth, captureHeight, profile);
+        var key = new RecognitionAssetCacheKey(taskName, objectName, captureWidth, captureHeight, profile);
         var recognitionObject = Cache.GetOrAdd(key, static cacheKey => Load(cacheKey));
         return recognitionObject;
     }
@@ -64,6 +71,29 @@ public static class RecognitionAssets
     public static void ClearAll()
     {
         Cache.Clear();
+        ProfileFallbackWarnings.Clear();
+    }
+
+    private static void WarnIfGamepadProfileMissing(
+        string taskName,
+        int captureWidth,
+        int captureHeight,
+        RecognitionInputProfile profile)
+    {
+        if (profile != RecognitionInputProfile.Gamepad || HasProfile(taskName, captureWidth, captureHeight))
+        {
+            return;
+        }
+
+        var key = $"{taskName}:{captureWidth}x{captureHeight}";
+        if (ProfileFallbackWarnings.TryAdd(key, 0))
+        {
+            Logger.LogWarning(
+                "手柄模式：{TaskName} 在 {Width}x{Height} 没有手柄识别 Profile，当前会回退到键鼠素材；这不代表该功能已适配手柄界面",
+                taskName,
+                captureWidth,
+                captureHeight);
+        }
     }
 
     public static bool HasProfile(string taskName, int captureWidth, int captureHeight)

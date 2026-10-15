@@ -43,6 +43,8 @@ public sealed class WebSdkInputBackend : InputChannelBase, IInputBackend
 
     public InputBackendKind Kind => InputBackendKind.WebSdk;
 
+    public bool SupportsBackground => true;
+
     public IInputChannel Foreground => this;
 
     public IInputChannel Background => this;

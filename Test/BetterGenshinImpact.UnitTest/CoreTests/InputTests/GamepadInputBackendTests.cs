@@ -23,6 +23,16 @@ public class GamepadInputBackendTests
     }
 
     [Fact]
+    public void GamepadBackend_DoesNotClaimBackgroundSupport()
+    {
+        var device = new RecordingGamepadDevice();
+        using var backend = new GamepadInputBackend(device);
+
+        Assert.False(backend.SupportsBackground);
+        Assert.Same(backend.Foreground, backend.Background);
+    }
+
+    [Fact]
     public void KeyPress_KeepsVirtualButtonDownAcrossAGamePollingWindow()
     {
         var device = new RecordingGamepadDevice();

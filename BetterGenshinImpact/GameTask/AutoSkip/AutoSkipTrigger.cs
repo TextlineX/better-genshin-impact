@@ -58,7 +58,7 @@ public partial class AutoSkipTrigger : ITaskTrigger
     /// <summary>
     /// 实时读取当前生效的配置（全局配置或脚本传入的配置）
     /// </summary>
-    public bool IsBackgroundRunning => _config.RunBackgroundEnabled;
+    public bool IsBackgroundRunning => _config.RunBackgroundEnabled && InputHub.Backend.SupportsBackground;
     
     public bool UseBackgroundOperation { get; private set; }
 
@@ -147,6 +147,11 @@ public partial class AutoSkipTrigger : ITaskTrigger
         if (customConfig == null && !_isDefaultCustomConfiguration)
         {
             InitKeyword();
+        }
+
+        if (_config.RunBackgroundEnabled && !InputHub.Backend.SupportsBackground)
+        {
+            _logger.LogWarning("自动剧情：当前输入后端不支持后台输入，手柄模式下请保持原神窗口处于前台；已跳过失焦时的自动操作");
         }
     }
 

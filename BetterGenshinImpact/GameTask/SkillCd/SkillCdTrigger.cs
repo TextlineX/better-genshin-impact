@@ -1,4 +1,6 @@
 using BetterGenshinImpact.Core.Config;
+using BetterGenshinImpact.Core.Input;
+using BetterGenshinImpact.Core.Recognition;
 using BetterGenshinImpact.Core.Recognition.OCR;
 using BetterGenshinImpact.GameTask.AutoFight.Assets;
 using BetterGenshinImpact.GameTask.AutoFight.Config;
@@ -102,6 +104,7 @@ public class SkillCdTrigger : ITaskTrigger
     private readonly object _stateLock = new();
     private readonly ILogger _logger = TaskControl.Logger;
     private readonly AvatarActiveCheckContext _activeCheckContext = new();
+    private bool _gamepadProfileWarningLogged;
 
     /// <summary>
     /// 启用时清空帧缓存和全部 CD 状态，从零开始计时
@@ -109,6 +112,7 @@ public class SkillCdTrigger : ITaskTrigger
     public void OnEnabled(object? options)
     {
         DisposeFrameCache();
+        _gamepadProfileWarningLogged = false;
         lock (_stateLock)
         {
             for (int i = 0; i < 4; i++)
@@ -132,6 +136,16 @@ public class SkillCdTrigger : ITaskTrigger
             _lastSwitchTime = DateTime.MinValue;
             _lastPressIndexTime = DateTime.MinValue;
             _lastSyncTime = DateTime.MinValue;
+        }
+
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad && !_gamepadProfileWarningLogged)
+        {
+            var captureRect = TaskContext.Instance().SystemInfo.ScaleMax1080PCaptureRect;
+            if (!RecognitionAssets.HasProfile("AutoFight", captureRect.Width, captureRect.Height))
+            {
+                _gamepadProfileWarningLogged = true;
+                _logger.LogWarning("[SkillCD] 手柄模式暂未提供 AutoFight 识别 Profile，角色冷却当前仍依赖键鼠界面素材和键盘 E/1-4 输入，不视为手柄界面已适配");
+            }
         }
     }
 

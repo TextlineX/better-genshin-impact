@@ -16,6 +16,8 @@ public sealed class Win32InputBackend : IInputBackend
 
     public InputBackendKind Kind => InputBackendKind.Win32;
 
+    public bool SupportsBackground => true;
+
     public IInputChannel Foreground { get; }
 
     public IInputChannel Background { get; }

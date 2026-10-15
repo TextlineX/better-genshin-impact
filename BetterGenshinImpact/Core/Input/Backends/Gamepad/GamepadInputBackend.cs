@@ -28,6 +28,10 @@ public sealed class GamepadInputBackend : IInputBackend
 
     public InputBackendKind Kind => InputBackendKind.Gamepad;
 
+    // XInput/ViGEm is consumed by the active game process and has no equivalent
+    // to Win32 PostMessage targeting a background window.
+    public bool SupportsBackground => false;
+
     public IInputChannel Foreground => _channel;
 
     public IInputChannel Background => _channel;
