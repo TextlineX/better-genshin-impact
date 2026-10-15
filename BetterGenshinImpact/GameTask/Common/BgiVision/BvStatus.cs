@@ -341,9 +341,8 @@ public static partial class Bv
                 return false;
             }
 
-            // 用户提供的手柄剧情截图包含左下角剧情工具栏，以及右下角绿色 A 确认提示。
-            // 只匹配其中一个会误判：地图、设置和其他菜单也会显示 A/B 确认提示，
-            // 而普通游戏画面也可能保留局部左下角 HUD。
+            // 用户提供的手柄剧情截图中，左下角的禁用图标是剧情界面的稳定标记。
+            // 右下角 A/B 提示会出现在设置、地图、抽奖等普通菜单中，不能作为剧情条件。
             using var disabledUiButton = captureRa.Find(RecognitionAssets.Get(
                 "AutoSkip",
                 "DisabledUiButton",
@@ -351,27 +350,7 @@ public static partial class Bv
                 captureRa.Height));
             var hasDisabledUiButton = disabledUiButton.IsExist();
 
-            using var dialogueConfirm = captureRa.Find(RecognitionAssets.Get(
-                "AutoSkip",
-                "GamepadDialogueConfirmIcon",
-                captureRa.Width,
-                captureRa.Height));
-            var hasDialogueConfirm = dialogueConfirm.IsExist();
-
-            // 选项页的控制器气泡是独立于左下角剧情工具栏的稳定标志。
-            // 选项页可能没有右下角“确认”文字，因此必须作为独立标记判断。
-            using var gamepadOption = captureRa.Find(RecognitionAssets.Get(
-                "AutoSkip",
-                "OptionIcon",
-                captureRa.Width,
-                captureRa.Height));
-
-            // 设置、背包、地图等界面同样可能在右下角显示 A/B 确认提示，
-            // 不能把单独的确认图标或单独的选项气泡当作剧情信号。
-            return HasReliableGamepadTalkMarker(
-                hasDisabledUiButton,
-                hasDialogueConfirm,
-                gamepadOption.IsExist());
+            return HasReliableGamepadTalkMarker(hasDisabledUiButton);
         }
 
         using var ra = captureRa.Find(RecognitionAssets.Get("AutoSkip", "DisabledUiButton", captureRa.Width, captureRa.Height));
@@ -379,14 +358,11 @@ public static partial class Bv
     }
 
     /// <summary>
-    /// 判断手柄截图是否同时包含剧情工具栏和剧情确认/选项标记。
+    /// 判断手柄截图是否包含剧情专属的左下角工具栏标记。
     /// </summary>
-    internal static bool HasReliableGamepadTalkMarker(
-        bool hasDisabledUiButton,
-        bool hasDialogueConfirm,
-        bool hasOptionIcon)
+    internal static bool HasReliableGamepadTalkMarker(bool hasDisabledUiButton)
     {
-        return hasDisabledUiButton && (hasDialogueConfirm || hasOptionIcon);
+        return hasDisabledUiButton;
     }
 
     /// <summary>
