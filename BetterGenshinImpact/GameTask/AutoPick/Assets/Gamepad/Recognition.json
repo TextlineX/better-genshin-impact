@@ -3,8 +3,8 @@
     "F": {
       "type": "TemplateMatch",
       "template": "RT.png",
-      "roi": "rect(cw / 2 + 100 * s, 500 * s, 100 * s, 180 * s)",
-      "threshold": 0.88,
+      "roi": "rect(cw / 2 + 80 * s, 400 * s, 320 * s, 360 * s)",
+      "threshold": 0.82,
       "useMask": true,
       "maskColor": "#00FF00",
       "draw": false
