@@ -26,6 +26,17 @@ public enum GameUiCategory
     BigMap
 }
 
+/// <summary>
+/// 手柄对话界面的细分状态。
+/// 对话场景标志和可选项标志是两个独立信号，不能用确认键图标代替场景判断。
+/// </summary>
+public enum GamepadDialogueState
+{
+    None,
+    Advance,
+    Option
+}
+
 public static partial class Bv
 {
     public static GameUiCategory WhichGameUi()
@@ -363,6 +374,71 @@ public static partial class Bv
     internal static bool HasReliableGamepadTalkMarker(bool hasDisabledUiButton)
     {
         return hasDisabledUiButton;
+    }
+
+    /// <summary>
+    /// 判断手柄对话的细分状态。
+    /// 左下角对话工具栏只负责确认“在对话场景”，右侧选项标记只负责确认“有可选项”。
+    /// </summary>
+    public static GamepadDialogueState GetGamepadDialogueState(ImageRegion captureRa)
+    {
+        if (InputHub.Backend.Kind != InputBackendKind.Gamepad
+            || !RecognitionAssets.HasProfile("AutoSkip", captureRa.Width, captureRa.Height))
+        {
+            return GamepadDialogueState.None;
+        }
+
+        using var paimonMenu = captureRa.Find(ElementRecognition.Get("PaimonMenu", captureRa));
+        if (paimonMenu.IsExist() || IsInBigMapUi(captureRa))
+        {
+            return GamepadDialogueState.None;
+        }
+
+        using var dialogueMarker = captureRa.Find(RecognitionAssets.Get(
+            "AutoSkip",
+            "DisabledUiButton",
+            captureRa.Width,
+            captureRa.Height));
+        var hasDialogueMarker = dialogueMarker.IsExist();
+        if (!HasReliableGamepadTalkMarker(hasDialogueMarker))
+        {
+            return GamepadDialogueState.None;
+        }
+
+        using var optionMarker = captureRa.Find(RecognitionAssets.Get(
+            "AutoSkip",
+            "OptionIcon",
+            captureRa.Width,
+            captureRa.Height));
+        var hasOptionMarker = optionMarker.IsExist();
+        if (!hasOptionMarker)
+        {
+            using var optionDots = captureRa.Find(RecognitionAssets.Get(
+                "AutoSkip",
+                "GamepadOptionDots",
+                captureRa.Width,
+                captureRa.Height));
+            hasOptionMarker = optionDots.IsExist();
+        }
+
+        return ResolveGamepadDialogueState(hasDialogueMarker, hasOptionMarker);
+    }
+
+    /// <summary>
+    /// 纯状态判断，供自动化测试覆盖“场景标志”和“选项标志”组合。
+    /// </summary>
+    internal static GamepadDialogueState ResolveGamepadDialogueState(
+        bool hasDialogueMarker,
+        bool hasOptionMarker)
+    {
+        if (!hasDialogueMarker)
+        {
+            return GamepadDialogueState.None;
+        }
+
+        return hasOptionMarker
+            ? GamepadDialogueState.Option
+            : GamepadDialogueState.Advance;
     }
 
     /// <summary>

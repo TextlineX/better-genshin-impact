@@ -16,6 +16,19 @@ public class AutoSkipSafetyTests
         Assert.Equal(expected, Bv.HasReliableGamepadTalkMarker(hasDisabledUiButton));
     }
 
+    [Theory]
+    [InlineData(false, false, GamepadDialogueState.None)]
+    [InlineData(false, true, GamepadDialogueState.None)]
+    [InlineData(true, false, GamepadDialogueState.Advance)]
+    [InlineData(true, true, GamepadDialogueState.Option)]
+    public void GamepadDialogueState_SeparatesSceneAndOptionMarkers(
+        bool hasDialogueMarker,
+        bool hasOptionMarker,
+        GamepadDialogueState expected)
+    {
+        Assert.Equal(expected, Bv.ResolveGamepadDialogueState(hasDialogueMarker, hasOptionMarker));
+    }
+
     [Fact]
     public void TriggerUiFilter_DoesNotRunTalkTriggerJustBecauseUiChanged()
     {

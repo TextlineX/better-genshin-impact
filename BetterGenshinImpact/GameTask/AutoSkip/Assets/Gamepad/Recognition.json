@@ -54,6 +54,14 @@
       "useMask": true,
       "draw": false
     },
+    "GamepadOptionDots": {
+      "type": "TemplateMatch",
+      "template": "icon_option.png",
+      "roi": "@option",
+      "threshold": 0.82,
+      "useMask": true,
+      "draw": false
+    },
     "DailyRewardIcon": {
       "type": "TemplateMatch",
       "template": "icon_daily_reward.png",

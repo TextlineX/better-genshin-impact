@@ -241,7 +241,12 @@ public partial class AutoSkipTrigger : ITaskTrigger
 
         // 每帧重新确认对话专属标记，不使用调度器分类结果兜底。
         // 分类结果可能来自上一阶段的识别，不能单独驱动手柄确认键。
-        var isPlaying = Bv.IsInTalkUi(content.CaptureRectArea); // 播放中
+        var gamepadDialogueState = InputHub.Backend.Kind == InputBackendKind.Gamepad
+            ? Bv.GetGamepadDialogueState(content.CaptureRectArea)
+            : GamepadDialogueState.None;
+        var isPlaying = InputHub.Backend.Kind == InputBackendKind.Gamepad
+            ? gamepadDialogueState != GamepadDialogueState.None
+            : Bv.IsInTalkUi(content.CaptureRectArea); // 播放中
 
         // 手柄模式只能通过确认后的剧情专属标记驱动焦点导航和确认键。
         // 菜单、设置、地图等界面也可能显示“确认”，不得执行剧情结束清理、
@@ -330,6 +335,12 @@ public partial class AutoSkipTrigger : ITaskTrigger
                 // 控制器选项页必须先读取焦点选项，再发送确认键；先确认会直接提交当前焦点，
                 // 导致后续模板识别不到选项，尤其是第一项已经默认获得焦点时。
                 hasOption = ChatOptionChooseUseKey(content.CaptureRectArea);
+                if (gamepadDialogueState == GamepadDialogueState.Option && !hasOption)
+                {
+                    // 已经确认是选项界面，但本帧选项识别暂时不完整时不发送 A，
+                    // 避免把焦点确认误当成普通剧情继续。
+                    return;
+                }
                 if (!hasOption && _config.QuicklySkipConversationsEnabled)
                 {
                     if (_config.BeforeClickConfirmDelay > 0)
@@ -657,7 +668,7 @@ public partial class AutoSkipTrigger : ITaskTrigger
             // 手柄选项依赖游戏焦点，不能把 OCR/鼠标区域当成可点击坐标。
             // 只使用右侧选项区域里的气泡图标作为选项存在信号，然后按视觉顺序
             // 导航到目标项并确认；不要用 RT 拾取提示作为对话选项兜底。
-            var optionRegions = region.FindMulti(GetRecognitionObject("OptionIcon", region));
+            var optionRegions = FindGamepadOptionRegions(region);
             try
             {
                 if (optionRegions.Count == 0)
@@ -1117,6 +1128,11 @@ public partial class AutoSkipTrigger : ITaskTrigger
 
     private bool HasDialogueOption(ImageRegion region)
     {
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad)
+        {
+            return Bv.GetGamepadDialogueState(region) == GamepadDialogueState.Option;
+        }
+
         using var chatOptionResult = region.Find(GetRecognitionObject("OptionIcon", region));
         if (chatOptionResult.IsExist())
         {
@@ -1131,6 +1147,30 @@ public partial class AutoSkipTrigger : ITaskTrigger
 
         using var exclamationIconRa = region.Find(GetRecognitionObject("ExclamationIcon", region));
         return !exclamationIconRa.IsEmpty();
+    }
+
+    private List<Region> FindGamepadOptionRegions(ImageRegion region)
+    {
+        var optionRegions = region.FindMulti(GetRecognitionObject("OptionIcon", region));
+        var fallbackRegions = region.FindMulti(GetRecognitionObject("GamepadOptionDots", region));
+
+        foreach (var fallbackRegion in fallbackRegions)
+        {
+            var isDuplicate = optionRegions.Any(optionRegion =>
+                Math.Abs(optionRegion.X - fallbackRegion.X) <= Math.Max(12, region.Width / 160)
+                && Math.Abs(optionRegion.Y - fallbackRegion.Y) <= Math.Max(12, region.Height / 100));
+
+            if (isDuplicate)
+            {
+                fallbackRegion.Dispose();
+            }
+            else
+            {
+                optionRegions.Add(fallbackRegion);
+            }
+        }
+
+        return optionRegions;
     }
 
     private bool HasDialogueAdvanceTarget(ImageRegion region, bool isPlaying)
