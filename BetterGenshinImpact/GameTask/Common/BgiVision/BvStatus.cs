@@ -28,13 +28,6 @@ public enum GameUiCategory
 
 public static partial class Bv
 {
-    private static readonly object GamepadTalkUiOcrLock = new();
-    private static DateTime _lastGamepadTalkUiOcrAt = DateTime.MinValue;
-    private static bool _lastGamepadTalkUiOcrResult;
-    private static int _lastGamepadTalkUiWidth;
-    private static int _lastGamepadTalkUiHeight;
-    private static readonly TimeSpan GamepadTalkUiOcrInterval = TimeSpan.FromMilliseconds(120);
-
     public static GameUiCategory WhichGameUi()
     {
         using var region = TaskControl.CaptureToRectArea();
@@ -362,52 +355,31 @@ public static partial class Bv
             }
 
             // 选项页的控制器气泡是独立于左下角剧情工具栏的稳定标志。
-            // 选项页可能没有右下角“确认”文字，因此必须在 OCR 之前判断它。
+            // 选项页可能没有右下角“确认”文字，因此必须作为独立标记判断。
             using var gamepadOption = captureRa.Find(RecognitionAssets.Get(
                 "AutoSkip",
                 "OptionIcon",
                 captureRa.Width,
                 captureRa.Height));
-            if (gamepadOption.IsExist())
-            {
-                return true;
-            }
 
-            // 自定义确认键可能不是 A，保留 OCR 兜底，但不要在每一帧重复调用 Paddle。
-            // 120ms 的节流只增加一帧级别的识别延迟，不会影响剧情确认动作。
-            lock (GamepadTalkUiOcrLock)
-            {
-                var now = DateTime.UtcNow;
-                if (captureRa.Width == _lastGamepadTalkUiWidth
-                    && captureRa.Height == _lastGamepadTalkUiHeight
-                    && now - _lastGamepadTalkUiOcrAt < GamepadTalkUiOcrInterval)
-                {
-                    return _lastGamepadTalkUiOcrResult;
-                }
-
-                _lastGamepadTalkUiOcrAt = now;
-                _lastGamepadTalkUiWidth = captureRa.Width;
-                _lastGamepadTalkUiHeight = captureRa.Height;
-            }
-
-            // 自定义手柄键位会改变确认按钮图标，但底部文字仍是“确认”。
-            // 只识别文字，避免把主界面 HUD 的 A 键误判为对话。
-            using var gamepadConfirmText = captureRa.Find(RecognitionAssets.Get(
-                "AutoSkip",
-                "GamepadDialogueConfirm",
-                captureRa.Width,
-                captureRa.Height));
-            var result = gamepadConfirmText.IsExist();
-            lock (GamepadTalkUiOcrLock)
-            {
-                _lastGamepadTalkUiOcrResult = result;
-            }
-
-            return result;
+            // 设置、背包、地图等界面同样可能在右下角显示“确认”文字，
+            // 不能把单独的确认 OCR 当作剧情信号。手柄剧情必须有专属的
+            // 左下角剧情工具栏或右侧选项气泡，才允许自动剧情继续发送输入。
+            return HasReliableGamepadTalkMarker(
+                hasDisabledUiButton: disabledUiButton.IsExist(),
+                hasOptionIcon: gamepadOption.IsExist());
         }
 
         using var ra = captureRa.Find(RecognitionAssets.Get("AutoSkip", "DisabledUiButton", captureRa.Width, captureRa.Height));
         return ra.IsExist();
+    }
+
+    /// <summary>
+    /// 判断手柄截图是否包含不会出现在普通菜单确认页中的剧情专属标记。
+    /// </summary>
+    internal static bool HasReliableGamepadTalkMarker(bool hasDisabledUiButton, bool hasOptionIcon)
+    {
+        return hasDisabledUiButton || hasOptionIcon;
     }
 
     /// <summary>

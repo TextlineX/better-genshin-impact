@@ -242,6 +242,15 @@ public partial class AutoSkipTrigger : ITaskTrigger
         var isPlaying = content.CurrentGameUiCategory == GameUiCategory.Talk
                         || Bv.IsInTalkUi(content.CaptureRectArea); // 播放中
 
+        // 手柄模式只能通过确认后的剧情专属标记驱动焦点导航和确认键。
+        // 菜单、设置、地图等界面也可能显示“确认”，不得执行剧情结束清理、
+        // 提交物品或任何确认输入。
+        if (InputHub.Backend.Kind == InputBackendKind.Gamepad && !isPlaying)
+        {
+            ResetPageCloseRecognition();
+            return;
+        }
+
         if (IsChooseOptionWaiting())
         {
             if (!HasDialogueAdvanceTarget(content.CaptureRectArea, isPlaying))
@@ -263,7 +272,10 @@ public partial class AutoSkipTrigger : ITaskTrigger
 
         _prevExecute = DateTime.Now;
 
-        GetDailyRewardsEsc(_config, content);
+        if (InputHub.Backend.Kind != InputBackendKind.Gamepad)
+        {
+            GetDailyRewardsEsc(_config, content);
+        }
 
         if (isPlaying && UseBackgroundOperation)
         {

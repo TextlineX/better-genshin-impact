@@ -93,10 +93,6 @@ namespace BetterGenshinImpact.GameTask
         /// </summary>
         public event EventHandler? UiTaskStopTickEvent;
 
-        private GameUiCategory PrevGameUiCategory = GameUiCategory.Unknown; // 上一个UI类别
-        private DateTime PrevGameUiChangeTime = DateTime.Now; // 上一次UI变化时间
-        
-
         public TaskTriggerDispatcher(
             ILogger<TaskTriggerDispatcher> logger,
             OverlayMetricsService metricsService,
@@ -472,16 +468,12 @@ namespace BetterGenshinImpact.GameTask
                     // 判断当前UI
                     content.CurrentGameUiCategory = Bv.WhichGameUiForTriggers(content.CaptureRectArea);
                     
-                    if (content.CurrentGameUiCategory != PrevGameUiCategory)
-                    {
-                        PrevGameUiChangeTime = DateTime.Now;
-                    }
-
                     foreach (var trigger in needRunTriggers)
                     {
-                        if ((PrevGameUiCategory != content.CurrentGameUiCategory || (DateTime.Now - PrevGameUiChangeTime).TotalSeconds <= 30) // UI变化了后的30s内则所有触发器执行一遍
-                            || trigger.SupportedGameUiCategory == content.CurrentGameUiCategory
-                            || (content.CurrentGameUiCategory == GameUiCategory.Unknown && trigger.RunWhenUiUnknown))
+                        if (ShouldRunTrigger(
+                                trigger.SupportedGameUiCategory,
+                                trigger.RunWhenUiUnknown,
+                                content.CurrentGameUiCategory))
                         {
                             // 触发器耗时只累计触发器执行本体，便于和截图耗时、总处理耗时拆开观察。
                             var triggerStart = Stopwatch.GetTimestamp();
@@ -491,7 +483,6 @@ namespace BetterGenshinImpact.GameTask
                         }
                     }
 
-                    PrevGameUiCategory = content.CurrentGameUiCategory;
                 }
 
                 speedTimer.DebugPrint();
@@ -517,6 +508,16 @@ namespace BetterGenshinImpact.GameTask
                     tickMetrics.Publish(_metricsService);
                 }
             }
+        }
+
+        internal static bool ShouldRunTrigger(
+            GameUiCategory supportedUi,
+            bool runWhenUiUnknown,
+            GameUiCategory currentUi)
+        {
+            return supportedUi == GameUiCategory.Unknown
+                   || supportedUi == currentUi
+                   || (currentUi == GameUiCategory.Unknown && runWhenUiUnknown);
         }
 
         /// <summary>
