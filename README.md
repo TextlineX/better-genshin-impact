@@ -12,7 +12,7 @@
   </a>
 </div>
 
-BetterGI 是一个通过计算机视觉和模拟输入辅助《原神》的开源项目。本仓库由 [TextlineX](https://github.com/TextlineX) 独立维护，当前版本为 0.66.2-alpha.3。
+BetterGI 是一个通过计算机视觉和模拟输入辅助《原神》的开源项目。本仓库由 [TextlineX](https://github.com/TextlineX) 独立维护，当前版本为 0.66.2-alpha.4。
 
 ## 这个仓库解决什么问题
 
@@ -41,7 +41,7 @@ BetterGI 是一个通过计算机视觉和模拟输入辅助《原神》的开�
 3. 发布自包含的 Windows x64 压缩包。
 4. 自动创建对应的 GitHub Release；带预发布标识的版本会自动标为 Pre-release。
 
-当前示例：v0.66.2-alpha.3。也可以在 GitHub Actions 手动选择一个已经存在的版本 tag 重新构建。旧的上游发布脚本曾依赖上游仓库和外部发布服务，已不再作为本仓库的发布入口。
+当前示例：v0.66.2-alpha.4。也可以在 GitHub Actions 手动选择一个已经存在的版本 tag 重新构建。旧的上游发布脚本曾依赖上游仓库和外部发布服务，已不再作为本仓库的发布入口。
 
 ## 运行要求
 

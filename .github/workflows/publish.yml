@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: '已有的版本 tag，例如 v0.66.2-alpha.3'
+        description: '已有的版本 tag，例如 v0.66.2-alpha.4'
         required: true
         type: string
 
